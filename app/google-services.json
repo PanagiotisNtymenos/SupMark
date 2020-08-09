@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "640251601660",
+    "firebase_url": "https://supmart-67fa8.firebaseio.com",
+    "project_id": "supmart-67fa8",
+    "storage_bucket": "supmart-67fa8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:640251601660:android:adf020c20aa507b1b16d79",
+        "android_client_info": {
+          "package_name": "com.supmark"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "640251601660-s4u1gjufk0842lkbm8ehsteut5gne0t2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6CbRYGU4rX0otBKscyK1h6Ier6emCVUs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "640251601660-s4u1gjufk0842lkbm8ehsteut5gne0t2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
