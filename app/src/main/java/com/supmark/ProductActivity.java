@@ -3,6 +3,7 @@ package com.supmark;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.AutoCompleteTextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,9 +34,12 @@ import javax.annotation.Nullable;
 public class ProductActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
+    private AutoCompleteTextView searchBox;
     private RecyclerView.Adapter mAdapter;
+    AutoCompleteProductSearchAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
     private final String TAG = "123";
+    private List<ProductItem> allProducts;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
@@ -47,8 +51,10 @@ public class ProductActivity extends AppCompatActivity {
         String currentList = intent.getStringExtra("LIST");
 
         recyclerView = findViewById(R.id.recycler_view_product);
+        searchBox = findViewById(R.id.search_products);
 
-        getProducts(currentList);
+        getProducts();
+        getProductsFromList(currentList);
 
     }
 
@@ -58,7 +64,11 @@ public class ProductActivity extends AppCompatActivity {
         return id;
     }
 
-    public void getProducts(final String currentList) {
+    public void getProducts(){
+
+    }
+
+    public void getProductsFromList(final String currentList) {
         final ArrayList<ProductItem> productsList = new ArrayList<ProductItem>();
 
         db.collection("lists").document(currentList).addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -79,7 +89,9 @@ public class ProductActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
                                         ArrayList<ProductItem> listProducts = new ArrayList<>();
+                                        allProducts = new ArrayList<>();
                                         for (QueryDocumentSnapshot document : task.getResult()) {
+                                            allProducts.add(new ProductItem(document.getString("image"), document.getId()));
                                             for (int i = 0; i < productsInList.size(); i++) {
                                                 final int productPosition = i;
                                                 if (productsInList.get(productPosition).equals(document.getId())) {
@@ -106,12 +118,19 @@ public class ProductActivity extends AppCompatActivity {
     public void setProductsList(ArrayList<ProductItem> products) {
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-
+//        recyclerView.setNestedScrollingEnabled(false);
         mAdapter = new ProductAdapter(products, getApplicationContext());
         mAdapter.notifyDataSetChanged();
         recyclerView.setAdapter(mAdapter);
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback((ProductAdapter) mAdapter));
         itemTouchHelper.attachToRecyclerView(recyclerView);
+
+        adapter = new AutoCompleteProductSearchAdapter(this, allProducts);
+        searchBox.setAdapter(adapter);
+    }
+
+    private void fillProductSearchBox() {
+
     }
 }

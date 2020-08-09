@@ -33,12 +33,20 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
             listName = itemView.findViewById(R.id.listName);
             edit = itemView.findViewById(R.id.edit_supermarket);
             delete = itemView.findViewById(R.id.delete_supermarket);
+            edit.setVisibility(View.INVISIBLE);
+            delete.setVisibility(View.INVISIBLE);
 
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
                     int p = getLayoutPosition();
-                    System.out.println("LongClick: " + p);
+                    if (edit.getVisibility() == View.INVISIBLE) {
+                        edit.setVisibility(View.VISIBLE);
+                        delete.setVisibility(View.VISIBLE);
+                    } else {
+                        edit.setVisibility(View.INVISIBLE);
+                        delete.setVisibility(View.INVISIBLE);
+                    }
                     return true;
                 }
             });
