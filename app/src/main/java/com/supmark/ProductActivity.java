@@ -130,7 +130,4 @@ public class ProductActivity extends AppCompatActivity {
         searchBox.setAdapter(adapter);
     }
 
-    private void fillProductSearchBox() {
-
-    }
 }
