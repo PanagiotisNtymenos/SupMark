@@ -2,6 +2,7 @@ package com.supmark;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.provider.Settings;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder> {
 
     private static ArrayList<ListItem> supermarkets;
+    ListActivity la = new ListActivity();
 
     public class CardViewHolder extends RecyclerView.ViewHolder {
 
@@ -78,7 +80,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
 
             delete.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view) {
+                public void onClick(final View view) {
                     final int p = getLayoutPosition();
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
@@ -88,8 +90,10 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
                     builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            supermarkets.remove(p);
-                            notifyItemChanged(p);
+                            String android_id = Settings.Secure.getString(view.getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+                            la.deleteListFromUser(supermarkets.get(p), android_id);
+//                            supermarkets.remove(p);
+//                            notifyItemChanged(p);
                         }
                     });
                     builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -101,7 +105,9 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
                     builder.show();
                 }
             });
+
         }
+
     }
 
 
@@ -137,6 +143,10 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
     @Override
     public int getItemCount() {
         return supermarkets.size();
+    }
+
+    public ListItem getItem(int position) {
+        return supermarkets.get(position);
     }
 
 }

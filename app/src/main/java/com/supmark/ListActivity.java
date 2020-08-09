@@ -1,17 +1,17 @@
 package com.supmark;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -36,9 +36,9 @@ public class ListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    ArrayList<ListItem> supermarketsList = new ArrayList<ListItem>();
     private final String TAG = "123";
     final ArrayList<ListItem> lists = new ArrayList<ListItem>();
+    public String currentUser;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
@@ -47,21 +47,22 @@ public class ListActivity extends AppCompatActivity {
         setContentView(R.layout.list_layout);
         recyclerView = findViewById(R.id.recycler_view);
 
-        String currentUser = getId();
+        currentUser = getId();
+        System.out.println(currentUser + " 2---------------------------------------------------------------------------------------------");
         getLists(currentUser);
 
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.add);
         addButton.setOnClickListener(mAddListener);
 
+
     }
 
     public String getId() {
         String id = android.provider.Settings.System.getString(super.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
-        System.out.println(id + "  ----------------------------------------------------------------");
         return id;
     }
 
-    public void getLists(String currentUser) {
+    private void getLists(String currentUser) {
 
         db.collection("users").document(currentUser).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -79,11 +80,14 @@ public class ListActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
                                         List<String> userLists = (List<String>) snapshot.get("lists");
+                                        if (!lists.isEmpty())
+                                            lists.clear();
                                         for (QueryDocumentSnapshot document : task.getResult()) {
 
                                             if (userLists.contains(document.getId()))
                                                 lists.add(new ListItem(document.getString("name"), document.getId()));
                                         }
+
                                         setLists(lists);
                                     } else {
                                         Log.w(TAG, "Error getting products.", task.getException());
@@ -99,7 +103,7 @@ public class ListActivity extends AppCompatActivity {
 
     }
 
-    public void setLists(ArrayList<ListItem> lists) {
+    private void setLists(ArrayList<ListItem> lists) {
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
@@ -108,7 +112,7 @@ public class ListActivity extends AppCompatActivity {
         recyclerView.setAdapter(mAdapter);
     }
 
-    public void addList(final String m_Text) {
+    private void addList(final String m_Text) {
         final Map<String, Object> list = new HashMap<>();
         list.put("name", m_Text);
         list.put("products", new ArrayList<String>());
@@ -119,13 +123,66 @@ public class ListActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
                         lists.add(new ListItem(m_Text, documentReference.getId()));
-                        setLists(lists);
+                        addListToUser(lists);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error adding document", e);
+                    }
+                });
+    }
+
+    private void addListToUser(final ArrayList<ListItem> lists) {
+        Map<String, Object> toUpdate = new HashMap<String, Object>();
+        List<String> listIDs = new ArrayList<>();
+        for (int i = 0; i < lists.size(); i++) {
+            listIDs.add(lists.get(i).getListID());
+        }
+        toUpdate.put("lists", listIDs);
+
+        db.collection("users")
+                .document(getId())
+                .update(toUpdate)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                    }
+                });
+    }
+
+    public void deleteListFromUser(final ListItem list, final String user) {
+
+        db.collection("users")
+                .document(user)
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@androidx.annotation.Nullable final DocumentSnapshot snapshot, @androidx.annotation.Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            System.err.println("Listen failed: " + e);
+                            return;
+                        }
+
+                        if (snapshot != null && snapshot.exists()) {
+                            List<String> lists = (List<String>) snapshot.get("lists");
+                            for (int i = 0; i < lists.size(); i++) {
+                                if (lists.get(i).equals(list.getListID())) {
+                                    lists.remove(i);
+                                    break;
+                                }
+                            }
+                            db.collection("users")
+                                    .document(user)
+                                    .update("lists", lists)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                        }
+                                    });
+                        } else {
+                            System.out.print("No such user");
+                        }
                     }
                 });
     }
