@@ -6,24 +6,33 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardViewHolder> {
 
+    private final String listID;
     private ArrayList<ProductItem> products;
     public ProductItem mRecentlyDeletedItem;
     public int mRecentlyDeletedItemPosition;
     private Context context;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    public ProductAdapter(ArrayList<ProductItem> products, Context context) {
+    public ProductAdapter(ArrayList<ProductItem> products, Context context, String currListID) {
         this.products = products;
         this.context = context;
+        this.listID = currListID;
     }
 
     @NonNull
@@ -36,11 +45,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
 
     @Override
     public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
+
+        TextView product;
+        ImageView productImage;
+
+        product = holder.itemView.findViewById(R.id.product_name);
+        productImage = holder.itemView.findViewById(R.id.product_image);
+
         ProductItem currItem = products.get(position);
 
-        holder.product.setText(currItem.getProduct());
+        product.setText(currItem.getProduct());
         String url = currItem.getProductImage();
-        Glide.with(getContext()).load(url).into(holder.productImage);
+        Glide.with(getContext()).load(url).into(productImage);
     }
 
     @Override
@@ -53,6 +69,26 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
         mRecentlyDeletedItemPosition = position;
         products.remove(position);
         notifyItemRemoved(position);
+
+        Map<String, Object> toUpdate = new HashMap<String, Object>();
+        List<String> productNames = new ArrayList<>();
+
+        for (int i = 0; i < products.size(); i++) {
+            productNames.add(products.get(i).getProduct());
+        }
+
+        toUpdate.put("products", productNames);
+
+        db.collection("lists")
+                .document(listID)
+                .update(toUpdate)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getContext(), "'" + mRecentlyDeletedItem.getProduct() + "' removed from the list!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
 //        showUndoSnackbar();
     }
 
@@ -81,13 +117,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
 
     public class CardViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView product;
-        public ImageView productImage;
-
         public CardViewHolder(@NonNull View itemView) {
             super(itemView);
-            product = itemView.findViewById(R.id.product_name);
-            productImage = itemView.findViewById(R.id.product_image);
+
         }
     }
 }
