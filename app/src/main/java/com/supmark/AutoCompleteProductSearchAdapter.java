@@ -7,24 +7,35 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> {
 
     private List<ProductItem> productListFull;
+    private List<ProductItem> productsInList;
 
-    public AutoCompleteProductSearchAdapter(@NonNull Context context, @NonNull List<ProductItem> productList) {
+    public AutoCompleteProductSearchAdapter(@NonNull Context context, @NonNull List<ProductItem> productList, ArrayList<ProductItem> products) {
         super(context, 0, productList);
 
         productListFull = new ArrayList<>(productList);
+        productsInList = new ArrayList<>(products);
     }
 
     @NonNull
@@ -48,7 +59,21 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> 
         if (productItem != null) {
             textViewName.setText(productItem.getProduct());
             String url = productItem.getProductImage();
-            Glide.with(getContext()).load(url).into(imageViewProduct);
+            final ProgressBar productImageProgress = convertView.findViewById(R.id.list_product_image_progressBar);
+
+            Glide.with(getContext()).load(url).listener(new RequestListener() {
+                @Override
+                public boolean onLoadFailed(@javax.annotation.Nullable GlideException e, Object model, Target target, boolean isFirstResource) {
+                    productImageProgress.setVisibility(View.INVISIBLE);
+                    return false;
+                }
+
+                @Override
+                public boolean onResourceReady(Object resource, Object model, Target target, DataSource dataSource, boolean isFirstResource) {
+                    productImageProgress.setVisibility(View.INVISIBLE);
+                    return false;
+                }
+            }).into(imageViewProduct);
         }
 
         return convertView;
@@ -67,7 +92,9 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> 
 
                 for (ProductItem item : productListFull) {
 
-                    if (item.getProduct().toLowerCase().contains(filterPattern)) {
+                    String ignoreAccent = removeAccents(item.getProduct().toLowerCase().trim());
+
+                    if (item.getProduct().toLowerCase().contains(filterPattern) || ignoreAccent.contains(filterPattern)) {
                         suggestions.add(item);
                     }
                 }
@@ -88,6 +115,33 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> 
         @Override
         public CharSequence convertResultToString(Object resultValue) {
             return ((ProductItem) resultValue).getProduct();
+        }
+
+        private String removeAccents(String prod) {
+            String noAccents = "";
+            HashMap<Character, Character> accentsToReplace = new HashMap<>();
+            accentsToReplace.put('ά', 'α');
+            accentsToReplace.put('έ', 'ε');
+            accentsToReplace.put('ό', 'ο');
+            accentsToReplace.put('ί', 'ι');
+            accentsToReplace.put('ύ', 'υ');
+            accentsToReplace.put('ώ', 'ω');
+            accentsToReplace.put('ή', 'η');
+
+            char[] searchToChars = new char[prod.length()];
+
+            for (int i = 0; i < prod.length(); i++) {
+                searchToChars[i] = prod.charAt(i);
+            }
+
+            for (char c : searchToChars) {
+                if (accentsToReplace.containsKey(c)) {
+                    noAccents = noAccents + accentsToReplace.get(c);
+                } else {
+                    noAccents = noAccents + c;
+                }
+            }
+            return noAccents;
         }
     };
 }

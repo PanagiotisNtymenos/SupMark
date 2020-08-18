@@ -1,11 +1,13 @@
 package com.supmark;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -31,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.security.AccessController.getContext;
+
 public class ListActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
@@ -39,6 +43,7 @@ public class ListActivity extends AppCompatActivity {
     private final String TAG = "123";
     final ArrayList<ListItem> lists = new ArrayList<ListItem>();
     public String currentUser;
+    private Context currContext;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
@@ -47,6 +52,7 @@ public class ListActivity extends AppCompatActivity {
         setContentView(R.layout.list_layout);
         recyclerView = findViewById(R.id.recycler_view);
 
+        setContext();
         currentUser = getId();
         getLists(currentUser);
 
@@ -122,7 +128,7 @@ public class ListActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
                         lists.add(new ListItem(m_Text, documentReference.getId()));
-                        addListToUser(lists);
+                        addListToUser(lists, m_Text);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -133,7 +139,7 @@ public class ListActivity extends AppCompatActivity {
                 });
     }
 
-    private void addListToUser(final ArrayList<ListItem> lists) {
+    private void addListToUser(final ArrayList<ListItem> lists, final String listName) {
         Map<String, Object> toUpdate = new HashMap<String, Object>();
         List<String> listIDs = new ArrayList<>();
         for (int i = 0; i < lists.size(); i++) {
@@ -147,6 +153,7 @@ public class ListActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        Toast.makeText(getApplicationContext(), "'" + listName + "' list added!", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -218,4 +225,8 @@ public class ListActivity extends AppCompatActivity {
             builder.show();
         }
     };
+
+    private void setContext() {
+        currContext = getApplicationContext();
+    }
 }

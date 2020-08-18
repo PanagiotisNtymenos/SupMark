@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -12,6 +13,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -19,6 +24,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardViewHolder> {
 
@@ -51,12 +58,25 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
 
         product = holder.itemView.findViewById(R.id.product_name);
         productImage = holder.itemView.findViewById(R.id.product_image);
+        final ProgressBar productImageProgress = holder.itemView.findViewById(R.id.product_image_progressBar);
 
         ProductItem currItem = products.get(position);
 
         product.setText(currItem.getProduct());
         String url = currItem.getProductImage();
-        Glide.with(getContext()).load(url).into(productImage);
+        Glide.with(getContext()).load(url).listener(new RequestListener() {
+            @Override
+            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target target, boolean isFirstResource) {
+                productImageProgress.setVisibility(View.INVISIBLE);
+                return false;
+            }
+
+            @Override
+            public boolean onResourceReady(Object resource, Object model, Target target, DataSource dataSource, boolean isFirstResource) {
+                productImageProgress.setVisibility(View.INVISIBLE);
+                return false;
+            }
+        }).into(productImage);
     }
 
     @Override

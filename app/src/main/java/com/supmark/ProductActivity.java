@@ -139,7 +139,7 @@ public class ProductActivity extends AppCompatActivity {
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback((ProductAdapter) mAdapter));
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
-        adapter = new AutoCompleteProductSearchAdapter(this, allProducts);
+        adapter = new AutoCompleteProductSearchAdapter(this, allProducts, products);
         searchBox.setAdapter(adapter);
     }
 

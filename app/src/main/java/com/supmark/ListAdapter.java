@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -99,6 +100,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             String android_id = Settings.Secure.getString(view.getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+                            Toast.makeText(view.getContext(), "'" + supermarkets.get(p).getListName() + "' list deleted!", Toast.LENGTH_SHORT).show();
                             la.deleteListFromUser(supermarkets.get(p), android_id);
 //                            supermarkets.remove(p);
 //                            notifyItemChanged(p);
