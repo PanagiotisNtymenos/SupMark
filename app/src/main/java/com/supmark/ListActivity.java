@@ -48,7 +48,6 @@ public class ListActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recycler_view);
 
         currentUser = getId();
-        System.out.println(currentUser + " 2---------------------------------------------------------------------------------------------");
         getLists(currentUser);
 
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.add);

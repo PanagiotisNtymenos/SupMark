@@ -3,20 +3,22 @@ package com.supmark;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.common.collect.Lists;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -26,9 +28,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import javax.annotation.Nullable;
+import java.util.Map;
 
 
 public class ProductActivity extends AppCompatActivity {
@@ -40,6 +42,8 @@ public class ProductActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager layoutManager;
     private final String TAG = "123";
     private List<ProductItem> allProducts;
+    private ArrayList<ProductItem> listProducts = new ArrayList<>();
+    private String currListID;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
@@ -56,20 +60,26 @@ public class ProductActivity extends AppCompatActivity {
         getProducts();
         getProductsFromList(currentList);
 
+        searchBox.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                searchBox.setText("");
+                addProduct(adapter.getItem(position));
+            }
+        });
+
     }
 
     public String getId() {
         String id = android.provider.Settings.System.getString(super.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
-        System.out.println(id + "  ----------------------------------------------------------------");
         return id;
     }
 
-    public void getProducts(){
+    public void getProducts() {
 
     }
 
     public void getProductsFromList(final String currentList) {
-        final ArrayList<ProductItem> productsList = new ArrayList<ProductItem>();
 
         db.collection("lists").document(currentList).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -81,6 +91,7 @@ public class ProductActivity extends AppCompatActivity {
 
                 if (snapshot != null && snapshot.exists()) {
                     final List<String> productsInList = (List<String>) snapshot.get("products");
+                    currListID = snapshot.getId();
 
                     db.collection("products")
                             .get()
@@ -88,7 +99,8 @@ public class ProductActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
-                                        ArrayList<ProductItem> listProducts = new ArrayList<>();
+                                        if (!listProducts.isEmpty())
+                                            listProducts.clear();
                                         allProducts = new ArrayList<>();
                                         for (QueryDocumentSnapshot document : task.getResult()) {
                                             allProducts.add(new ProductItem(document.getString("image"), document.getId()));
@@ -118,9 +130,7 @@ public class ProductActivity extends AppCompatActivity {
     public void setProductsList(ArrayList<ProductItem> products) {
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-//        recyclerView.setNestedScrollingEnabled(false);
         mAdapter = new ProductAdapter(products, getApplicationContext());
-        mAdapter.notifyDataSetChanged();
         recyclerView.setAdapter(mAdapter);
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback((ProductAdapter) mAdapter));
@@ -128,6 +138,29 @@ public class ProductActivity extends AppCompatActivity {
 
         adapter = new AutoCompleteProductSearchAdapter(this, allProducts);
         searchBox.setAdapter(adapter);
+    }
+
+    public void addProduct(final ProductItem product) {
+        Map<String, Object> toUpdate = new HashMap<String, Object>();
+        List<String> productNames = new ArrayList<>();
+
+        for (int i = 0; i < listProducts.size(); i++) {
+            productNames.add(listProducts.get(i).getProduct());
+        }
+        productNames.add(product.getProduct());
+        toUpdate.put("products", productNames);
+
+        db.collection("lists")
+                .document(currListID)
+                .update(toUpdate)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getApplicationContext(), "'" + product.getProduct() + "' added to the list!", Toast.LENGTH_SHORT).show();
+                        setProductsList(listProducts);
+                    }
+                });
+
     }
 
 }

@@ -66,6 +66,7 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> 
                 String filterPattern = constraint.toString().toLowerCase().trim();
 
                 for (ProductItem item : productListFull) {
+
                     if (item.getProduct().toLowerCase().contains(filterPattern)) {
                         suggestions.add(item);
                     }
