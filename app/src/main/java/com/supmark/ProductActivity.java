@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.blogspot.atifsoftwares.animatoolib.Animatoo;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -75,6 +76,16 @@ public class ProductActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 searchBox.setText("");
                 addProduct(adapter.getItem(position));
+            }
+        });
+
+        findViewById(R.id.constraintLayout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), ListActivity.class);
+                v.getContext().startActivity(intent);
+                Animatoo.animateZoom(v.getContext());
+
             }
         });
 
@@ -137,6 +148,7 @@ public class ProductActivity extends AppCompatActivity {
             recyclerView.setLayoutManager(layoutManager);
             mAdapter = new ProductAdapter(products, getWindow().getDecorView().findViewById(R.id.recycler_view_product), getApplicationContext(), currListID);
             recyclerView.setAdapter(mAdapter);
+            recyclerView.setNestedScrollingEnabled(false);
 
             ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback((ProductAdapter) mAdapter));
             itemTouchHelper.attachToRecyclerView(recyclerView);
@@ -188,6 +200,14 @@ public class ProductActivity extends AppCompatActivity {
             loadProductText.setVisibility(View.INVISIBLE);
         }
         loadProductBar.setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+//        startActivity(new Intent(this, ListActivity.class));
+//        Animatoo.animateZoom(this);
+        Animatoo.animateSlideRight(this); //fire the slide left animation
     }
 
 }

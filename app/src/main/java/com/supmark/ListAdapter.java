@@ -16,6 +16,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.blogspot.atifsoftwares.animatoolib.Animatoo;
+
 import java.util.ArrayList;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder> {
@@ -146,6 +148,9 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
                 intent.putExtra("LIST_ID", currItem.getListID());
                 intent.putExtra("LIST_NAME", currItem.getListName());
                 v.getContext().startActivity(intent);
+                Animatoo.animateSlideLeft(v.getContext());
+
+
             }
         });
 
