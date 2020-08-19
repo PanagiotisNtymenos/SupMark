@@ -2,6 +2,7 @@ package com.supmark;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -58,6 +60,9 @@ public class ListActivity extends AppCompatActivity {
         foundLists = findViewById(R.id.load_lists_text);
         loadLists = findViewById(R.id.load_lists_bar);
 
+        final CardView moreOptions = findViewById(R.id.more_options);
+        moreOptions.setVisibility(View.INVISIBLE);
+
         setContext();
         currentUser = getId();
         getLists(currentUser);
@@ -65,7 +70,16 @@ public class ListActivity extends AppCompatActivity {
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.add);
         addButton.setOnClickListener(mAddListener);
 
-
+        findViewById(R.id.join_invite).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (moreOptions.getVisibility() == View.VISIBLE) {
+                    moreOptions.setVisibility(View.INVISIBLE);
+                } else {
+                    moreOptions.setVisibility(View.VISIBLE);
+                }
+            }
+        });
     }
 
     public String getId() {

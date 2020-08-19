@@ -230,5 +230,4 @@
             app:layout_constraintStart_toStartOf="parent" />
     </androidx.cardview.widget.CardView>
 
-
 </androidx.constraintlayout.widget.ConstraintLayout>
