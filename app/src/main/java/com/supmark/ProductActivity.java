@@ -59,7 +59,7 @@ public class ProductActivity extends AppCompatActivity {
         String currentList = intent.getStringExtra("LIST_ID");
         String currentListName = intent.getStringExtra("LIST_NAME");
 
-        TextView listNameDisplay = findViewById(R.id.list_name_display);
+        TextView listNameDisplay = findViewById(R.id.list_name_display_text);
         listNameDisplay.setText(currentListName);
 
         recyclerView = findViewById(R.id.recycler_view_product);
