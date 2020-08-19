@@ -150,21 +150,25 @@ public class ProductActivity extends AppCompatActivity {
         for (int i = 0; i < listProducts.size(); i++) {
             productNames.add(listProducts.get(i).getProduct());
         }
-        productNames.add(product.getProduct());
-        toUpdate.put("products", productNames);
 
-        db.collection("lists")
-                .document(currListID)
-                .update(toUpdate)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        hideKeyboard(getApplicationContext(), searchBox.getRootView());
-                        Toast.makeText(getApplicationContext(), "'" + product.getProduct() + "' added to the list!", Toast.LENGTH_SHORT).show();
-                        setProductsList(listProducts);
-                    }
-                });
+        if (productNames.contains(product.getProduct())) {
+            Toast.makeText(getApplicationContext(), "'" + product.getProduct() + "' is already on the list!", Toast.LENGTH_SHORT).show();
+        } else {
+            productNames.add(product.getProduct());
+            toUpdate.put("products", productNames);
 
+            db.collection("lists")
+                    .document(currListID)
+                    .update(toUpdate)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            hideKeyboard(getApplicationContext(), searchBox.getRootView());
+                            Toast.makeText(getApplicationContext(), "'" + product.getProduct() + "' added to the list!", Toast.LENGTH_SHORT).show();
+                            setProductsList(listProducts);
+                        }
+                    });
+        }
     }
 
     public static void hideKeyboard(Context context, View view) {

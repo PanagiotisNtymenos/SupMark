@@ -33,8 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.security.AccessController.getContext;
-
 public class ListActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
@@ -101,6 +99,7 @@ public class ListActivity extends AppCompatActivity {
                             });
                 } else {
                     System.out.print("No such user");
+                    giveUsername();
                 }
             }
 
@@ -191,6 +190,59 @@ public class ListActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    private void addUser(String username) {
+        ArrayList<String> lists = new ArrayList<>();
+        final Map<String, Object> user = new HashMap<>();
+        user.put("lists", lists);
+        if (username.equals("")) {
+            user.put("name", "user" + currentUser.charAt(0) + currentUser.charAt(1) + currentUser.charAt(2) + currentUser.charAt(3));
+        } else {
+            user.put("name", username);
+        }
+
+        db.collection("users")
+                .document(currentUser)
+                .set(user)
+                .addOnSuccessListener(new OnSuccessListener<Object>() {
+                    @Override
+                    public void onSuccess(Object o) {
+                        Toast.makeText(getApplicationContext(), "You're now signed in as '" + user.get("name") + "'", Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private void giveUsername() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Hi!");
+        builder.setMessage("It seems that you are a brand new user! Please, enter a nickname below..");
+
+        final EditText input = new EditText(this);
+
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String m_Text;
+                m_Text = input.getText().toString();
+                if (!m_Text.equals("")) {
+                    addUser(m_Text);
+                } else {
+                    addUser("");
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                addUser("");
+                dialog.cancel();
+            }
+        });
+        builder.show();
     }
 
     private View.OnClickListener mAddListener = new View.OnClickListener() {
