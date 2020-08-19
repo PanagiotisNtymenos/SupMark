@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -43,6 +44,9 @@ public class ListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
+    private RecyclerView recyclerViewShareList;
+    private RecyclerView.Adapter shareListAdapter;
+    private RecyclerView.LayoutManager layoutManagerShareList;
     private TextView foundLists;
     private ProgressBar loadLists;
     private final String TAG = "123";
@@ -80,6 +84,42 @@ public class ListActivity extends AppCompatActivity {
                 }
             }
         });
+
+        findViewById(R.id.share_layout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (lists != null) {
+                    if (!lists.isEmpty())
+                        shareList();
+                }
+            }
+        });
+    }
+
+    private void shareList() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(ListActivity.this);
+        builder.setTitle("Share your List!");
+        builder.setMessage("You need to copy the list's link, and then send it to the user you want to share it with.");
+
+        LayoutInflater factory = LayoutInflater.from(this);
+        final View view = factory.inflate(R.layout.share_list_layout, null);
+
+        builder.setView(view);
+
+        recyclerViewShareList = (RecyclerView) view.findViewById(R.id.share_lists_recycler_view);
+
+        layoutManagerShareList = new LinearLayoutManager(getApplicationContext());
+        recyclerViewShareList.setLayoutManager(layoutManagerShareList);
+
+        shareListAdapter = new ShareListAdapter(lists);
+        recyclerViewShareList.setAdapter(shareListAdapter);
+        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dlg, int sumthin) {
+
+            }
+        });
+
+        builder.show();
     }
 
     public String getId() {

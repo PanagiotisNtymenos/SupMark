@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     tools:context=".ListActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -43,7 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
-            android:text="SupMart"
+            android:text="SupMark"
             android:textAppearance="@style/TextAppearance.AppCompat.Display3"
             android:textColor="@color/colorPrimary"
             android:textSize="20dp"
@@ -165,14 +166,15 @@
         android:layout_marginTop="35dp"
         android:layout_marginEnd="35dp"
         android:layout_marginRight="35dp"
-        app:cardCornerRadius="10dp"
+        app:cardCornerRadius="5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="10dp">
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="wrap_content"
@@ -180,53 +182,83 @@
                 app:layout_constraintEnd_toEndOf="@+id/cardView3"
                 app:layout_constraintTop_toTopOf="@+id/cardView3">
 
-                <ImageView
-                    android:id="@+id/imageView3"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginTop="8dp"
+                <RelativeLayout
+                    android:id="@+id/share_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_baseline_person_add_24"
-                    tools:ignore="VectorDrawableCompat" />
+                    app:layout_constraintTop_toTopOf="parent">
 
-                <ImageView
-                    android:id="@+id/imageView4"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:id="@+id/imageView3"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_marginTop="8dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:srcCompat="@drawable/ic_baseline_person_add_24"
+                            tools:ignore="VectorDrawableCompat" />
+
+                        <TextView
+                            android:id="@+id/textView4"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_marginLeft="8dp"
+                            android:text="Share List"
+                            app:layout_constraintBottom_toBottomOf="@+id/imageView3"
+                            app:layout_constraintStart_toEndOf="@+id/imageView3"
+                            app:layout_constraintTop_toTopOf="@+id/imageView3" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/copy_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/imageView3"
-                    app:srcCompat="@drawable/ic_baseline_playlist_add_24"
-                    tools:ignore="VectorDrawableCompat" />
+                    app:layout_constraintTop_toBottomOf="@+id/share_layout">
 
-                <TextView
-                    android:id="@+id/textView4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
-                    android:text="Share List"
-                    app:layout_constraintBottom_toBottomOf="@+id/imageView3"
-                    app:layout_constraintStart_toEndOf="@+id/imageView3"
-                    app:layout_constraintTop_toTopOf="@+id/imageView3" />
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/textView5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
-                    android:text="Join List"
-                    app:layout_constraintBottom_toBottomOf="@+id/imageView4"
-                    app:layout_constraintStart_toEndOf="@+id/imageView4"
-                    app:layout_constraintTop_toTopOf="@+id/imageView4" />
+                        <ImageView
+                            android:id="@+id/imageView4"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentLeft="true"
+                            android:layout_marginBottom="8dp"
+                            android:scaleX="-1"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:srcCompat="@drawable/ic_baseline_playlist_add_24"
+                            tools:ignore="VectorDrawableCompat" />
+
+                        <TextView
+                            android:id="@+id/textView5"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@+id/imageView4"
+                            android:layout_marginStart="8dp"
+                            android:layout_marginLeft="8dp"
+                            android:text="Join List"
+                            app:layout_constraintBottom_toBottomOf="@+id/imageView4"
+                            app:layout_constraintStart_toEndOf="@+id/imageView4"
+                            app:layout_constraintTop_toTopOf="@+id/imageView4" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </RelativeLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
