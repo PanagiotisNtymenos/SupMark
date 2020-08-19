@@ -1,6 +1,8 @@
 package com.supmark;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,13 +56,15 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> 
 
         TextView textViewName = convertView.findViewById(R.id.product_name_list);
         ImageView imageViewProduct = convertView.findViewById(R.id.product_image_list);
+        ImageView add = convertView.findViewById(R.id.add_product);
+        ImageView tick = convertView.findViewById(R.id.tick_product);
 
         ProductItem productItem = getItem(position);
         if (productItem != null) {
             textViewName.setText(productItem.getProduct());
             String url = productItem.getProductImage();
             final ProgressBar productImageProgress = convertView.findViewById(R.id.list_product_image_progressBar);
-
+            productImageProgress.setVisibility(View.VISIBLE);
             Glide.with(getContext()).load(url).listener(new RequestListener() {
                 @Override
                 public boolean onLoadFailed(@javax.annotation.Nullable GlideException e, Object model, Target target, boolean isFirstResource) {
@@ -74,6 +78,20 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> 
                     return false;
                 }
             }).into(imageViewProduct);
+
+            ArrayList<String> productNamesInList = new ArrayList<>();
+            for (ProductItem pi : productsInList) {
+                productNamesInList.add(pi.getProduct());
+            }
+
+            if (productNamesInList.contains(productItem.getProduct())) {
+                add.setVisibility(View.INVISIBLE);
+                tick.setVisibility(View.VISIBLE);
+            } else {
+                add.setVisibility(View.VISIBLE);
+                tick.setVisibility(View.INVISIBLE);
+            }
+
         }
 
         return convertView;
@@ -143,5 +161,6 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> 
             }
             return noAccents;
         }
+
     };
 }
