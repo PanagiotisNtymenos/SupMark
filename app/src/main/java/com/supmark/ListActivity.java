@@ -7,6 +7,8 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -38,6 +40,8 @@ public class ListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
+    private TextView foundLists;
+    private ProgressBar loadLists;
     private final String TAG = "123";
     final ArrayList<ListItem> lists = new ArrayList<ListItem>();
     public String currentUser;
@@ -49,6 +53,9 @@ public class ListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.list_layout);
         recyclerView = findViewById(R.id.recycler_view);
+
+        foundLists = findViewById(R.id.load_lists_text);
+        loadLists = findViewById(R.id.load_lists_bar);
 
         setContext();
         currentUser = getId();
@@ -90,7 +97,13 @@ public class ListActivity extends AppCompatActivity {
                                             if (userLists.contains(document.getId()))
                                                 lists.add(new ListItem(document.getString("name"), document.getId()));
                                         }
-
+                                        if (lists.isEmpty()) {
+                                            foundLists.setVisibility(View.VISIBLE);
+                                            foundLists.setText("You have no lists yet..");
+                                        } else {
+                                            foundLists.setVisibility(View.INVISIBLE);
+                                        }
+                                        loadLists.setVisibility(View.INVISIBLE);
                                         setLists(lists);
                                     } else {
                                         Log.w(TAG, "Error getting products.", task.getException());
@@ -217,10 +230,11 @@ public class ListActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Hi!");
         builder.setMessage("It seems that you are a brand new user! Please, enter a nickname below..");
+        builder.setCancelable(false);
 
         final EditText input = new EditText(this);
 
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {

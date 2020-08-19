@@ -143,7 +143,8 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(v.getContext(), ProductActivity.class);
-                intent.putExtra("LIST", currItem.getListID());
+                intent.putExtra("LIST_ID", currItem.getListID());
+                intent.putExtra("LIST_NAME", currItem.getListName());
                 v.getContext().startActivity(intent);
             }
         });

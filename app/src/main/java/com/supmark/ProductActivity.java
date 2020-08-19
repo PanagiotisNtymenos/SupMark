@@ -9,6 +9,9 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,6 +46,8 @@ public class ProductActivity extends AppCompatActivity {
     private RecyclerView.Adapter mAdapter;
     AutoCompleteProductSearchAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
+    private TextView loadProductText;
+    private ProgressBar loadProductBar;
     private final String TAG = "123";
     private List<ProductItem> allProducts;
     private ArrayList<ProductItem> listProducts = new ArrayList<>();
@@ -55,12 +60,18 @@ public class ProductActivity extends AppCompatActivity {
         setContentView(R.layout.product_layout);
 
         Intent intent = getIntent();
-        String currentList = intent.getStringExtra("LIST");
+        String currentList = intent.getStringExtra("LIST_ID");
+        String currentListName = intent.getStringExtra("LIST_NAME");
+
+        TextView listNameDisplay = findViewById(R.id.list_name_display);
+        listNameDisplay.setText(currentListName);
 
         recyclerView = findViewById(R.id.recycler_view_product);
         searchBox = findViewById(R.id.search_products);
 
-        getProducts();
+        loadProductBar = findViewById(R.id.load_products_bar);
+        loadProductText = findViewById(R.id.load_products_text);
+
         getProductsFromList(currentList);
 
         searchBox.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -70,15 +81,6 @@ public class ProductActivity extends AppCompatActivity {
                 addProduct(adapter.getItem(position));
             }
         });
-
-    }
-
-    public String getId() {
-        String id = android.provider.Settings.System.getString(super.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
-        return id;
-    }
-
-    public void getProducts() {
 
     }
 
@@ -131,6 +133,7 @@ public class ProductActivity extends AppCompatActivity {
     }
 
     public void setProductsList(ArrayList<ProductItem> products) {
+        emptyListDisplay();
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         mAdapter = new ProductAdapter(products, getApplicationContext(), currListID);
@@ -174,6 +177,16 @@ public class ProductActivity extends AppCompatActivity {
     public static void hideKeyboard(Context context, View view) {
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    private void emptyListDisplay() {
+        if (listProducts.isEmpty()) {
+            loadProductBar.setVisibility(View.VISIBLE);
+            loadProductText.setText("You have no products in the list..");
+        } else {
+            loadProductText.setVisibility(View.INVISIBLE);
+        }
+        loadProductBar.setVisibility(View.INVISIBLE);
     }
 
 }
