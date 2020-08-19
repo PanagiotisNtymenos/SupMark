@@ -18,6 +18,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -34,11 +35,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
     public ProductItem mRecentlyDeletedItem;
     public int mRecentlyDeletedItemPosition;
     private Context context;
+    private View view;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    public ProductAdapter(ArrayList<ProductItem> products, Context context, String currListID) {
+    public ProductAdapter(ArrayList<ProductItem> products, View view, Context context, String currListID) {
         this.products = products;
         this.context = context;
+        this.view = view;
         this.listID = currListID;
     }
 
@@ -99,41 +102,54 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
 
         toUpdate.put("products", productNames);
 
-        db.collection("lists")
-                .document(listID)
-                .update(toUpdate)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Toast.makeText(getContext(), "'" + mRecentlyDeletedItem.getProduct() + "' removed from the list!", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-//        showUndoSnackbar();
+        showUndoSnackbar(toUpdate);
     }
 
     public Context getContext() {
         return context;
     }
 
-//    private void showUndoSnackbar() {
-//        View view = findViewById(R.id.coordinator_layout);
-//        Snackbar snackbar = Snackbar.make(view, "Undo Done",
-//                Snackbar.LENGTH_LONG);
-//        snackbar.setAction("Undo", new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                ProductAdapter.this.undoDelete();
-//            }
-//        });
-//        snackbar.show();
-//    }
-//
-//    private void undoDelete() {
-//        products.add(mRecentlyDeletedItemPosition,
-//                mRecentlyDeletedItem);
-//        notifyItemInserted(mRecentlyDeletedItemPosition);
-//    }
+    public View getView() {
+        return view;
+    }
+
+    private void showUndoSnackbar(final Map<String, Object> toUpdate) {
+        Toast.makeText(getContext(), "'" + mRecentlyDeletedItem.getProduct() + "' removed from the list!", Toast.LENGTH_SHORT).show();
+
+        View view = getView();
+        Snackbar snackbar = Snackbar.make(view, "Undo Delete",
+                Snackbar.LENGTH_SHORT);
+        snackbar.setAction("Undo", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ProductAdapter.this.undoDelete();
+                Toast.makeText(getContext(), "'" + mRecentlyDeletedItem.getProduct() + "' is back into the list!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        snackbar.addCallback(new Snackbar.Callback() {
+            @Override
+            public void onDismissed(Snackbar snackbar, int event) {
+                if (event == Snackbar.Callback.DISMISS_EVENT_TIMEOUT) {
+                    db.collection("lists")
+                            .document(listID)
+                            .update(toUpdate)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                }
+                            });
+                }
+            }
+        });
+
+        snackbar.show();
+    }
+
+    private void undoDelete() {
+        products.add(mRecentlyDeletedItemPosition, mRecentlyDeletedItem);
+        notifyItemInserted(mRecentlyDeletedItemPosition);
+    }
 
     public class CardViewHolder extends RecyclerView.ViewHolder {
 

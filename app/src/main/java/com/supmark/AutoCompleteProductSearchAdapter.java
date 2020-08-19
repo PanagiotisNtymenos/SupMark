@@ -1,8 +1,6 @@
 package com.supmark;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +9,6 @@ import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,11 +19,9 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> {
 

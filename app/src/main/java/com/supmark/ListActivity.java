@@ -83,6 +83,10 @@ public class ListActivity extends AppCompatActivity {
                 }
 
                 if (snapshot != null && snapshot.exists()) {
+                    TextView username = findViewById(R.id.username);
+                    username.setText(snapshot.getString("name"));
+                    username.setSelected(true);
+
                     db.collection("lists")
                             .get()
                             .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

@@ -9,23 +9,19 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -133,17 +129,21 @@ public class ProductActivity extends AppCompatActivity {
     }
 
     public void setProductsList(ArrayList<ProductItem> products) {
-        emptyListDisplay();
-        layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-        mAdapter = new ProductAdapter(products, getApplicationContext(), currListID);
-        recyclerView.setAdapter(mAdapter);
-
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback((ProductAdapter) mAdapter));
-        itemTouchHelper.attachToRecyclerView(recyclerView);
-
         adapter = new AutoCompleteProductSearchAdapter(this, allProducts, products);
         searchBox.setAdapter(adapter);
+        if (mAdapter == null) {
+            emptyListDisplay();
+            layoutManager = new LinearLayoutManager(this);
+            recyclerView.setLayoutManager(layoutManager);
+            mAdapter = new ProductAdapter(products, getWindow().getDecorView().findViewById(R.id.recycler_view_product), getApplicationContext(), currListID);
+            recyclerView.setAdapter(mAdapter);
+
+            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback((ProductAdapter) mAdapter));
+            itemTouchHelper.attachToRecyclerView(recyclerView);
+
+        } else {
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
     public void addProduct(final ProductItem product) {
@@ -168,7 +168,8 @@ public class ProductActivity extends AppCompatActivity {
                         public void onSuccess(Void aVoid) {
                             hideKeyboard(getApplicationContext(), searchBox.getRootView());
                             Toast.makeText(getApplicationContext(), "'" + product.getProduct() + "' added to the list!", Toast.LENGTH_SHORT).show();
-                            setProductsList(listProducts);
+                            mAdapter.notifyDataSetChanged();
+                            //                            setProductsList(listProducts);
                         }
                     });
         }
