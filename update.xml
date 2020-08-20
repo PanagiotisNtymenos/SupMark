@@ -1,0 +1,7 @@
+<AppUpdater>
+  <update>
+    <latestVersion>1.0.0</latestVersion>
+    <latestVersionCode>1</latestVersionCode>
+    <url>https://github.com/PanagiotisNtymenos/SupMark/releases</url>
+  </update>
+</AppUpdater>
