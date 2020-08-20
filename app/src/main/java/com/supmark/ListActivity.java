@@ -1,20 +1,15 @@
 package com.supmark;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -25,11 +20,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.blogspot.atifsoftwares.animatoolib.Animatoo;
+import com.github.javiersantos.appupdater.AppUpdater;
+import com.github.javiersantos.appupdater.enums.Display;
+import com.github.javiersantos.appupdater.enums.UpdateFrom;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -49,8 +46,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.content.ClipDescription.MIMETYPE_TEXT_PLAIN;
-
 public class ListActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
@@ -61,12 +56,12 @@ public class ListActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager layoutManagerShareList;
     private TextView foundLists;
     private ProgressBar loadLists;
-    private final String TAG = "123";
-    final ArrayList<ListItem> lists = new ArrayList<ListItem>();
+    private final String TAG = "ListActivity";
+    private final ArrayList<ListItem> lists = new ArrayList<ListItem>();
     private List<String> userLists = new ArrayList<>();
     public String currentUser;
     private Context currContext;
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,6 +127,29 @@ public class ListActivity extends AppCompatActivity {
                 joinList();
             }
         });
+
+        findViewById(R.id.update_layout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkForUpdates();
+            }
+        });
+
+    }
+
+    private void checkForUpdates() {
+        AppUpdater appUpdater = new AppUpdater(this);
+        appUpdater.setGitHubUserAndRepo("PanagiotisNtymenos", "SupMark")
+                .setUpdateFrom(UpdateFrom.GITHUB)
+                .setDisplay(Display.DIALOG)
+                .showAppUpdated(true)
+                .setTitleOnUpdateAvailable("Update available")
+                .setContentOnUpdateAvailable("Check out the latest version available of my app!")
+                .setTitleOnUpdateNotAvailable("Update not available")
+                .setContentOnUpdateNotAvailable("No update available. Check for updates again later!")
+                .setButtonUpdate("Update now?")
+                .setButtonDismiss("Maybe later")
+                .start();
 
     }
 
