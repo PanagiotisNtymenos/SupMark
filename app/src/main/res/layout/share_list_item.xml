@@ -47,5 +47,6 @@
         app:layout_constraintBottom_toBottomOf="@+id/share_list_link"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/share_list_name"
-        app:srcCompat="@drawable/ic_outline_file_copy_24" />
+        app:srcCompat="@drawable/ic_outline_file_copy_24"
+        tools:ignore="VectorDrawableCompat" />
 </androidx.constraintlayout.widget.ConstraintLayout>

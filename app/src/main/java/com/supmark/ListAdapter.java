@@ -23,7 +23,7 @@ import java.util.ArrayList;
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder> {
 
     private static ArrayList<ListItem> supermarkets;
-    ListActivity la = new ListActivity();
+    public int p;
 
     public class CardViewHolder extends RecyclerView.ViewHolder {
 
@@ -101,11 +101,10 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
                     builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            ListActivity la = new ListActivity();
                             String android_id = Settings.Secure.getString(view.getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
                             Toast.makeText(view.getContext(), "'" + supermarkets.get(p).getListName() + "' list deleted!", Toast.LENGTH_SHORT).show();
                             la.deleteListFromUser(supermarkets.get(p), android_id);
-//                            supermarkets.remove(p);
-//                            notifyItemChanged(p);
                         }
                     });
                     builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -149,8 +148,6 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
                 intent.putExtra("LIST_NAME", currItem.getListName());
                 v.getContext().startActivity(intent);
                 Animatoo.animateSlideLeft(v.getContext());
-
-
             }
         });
 

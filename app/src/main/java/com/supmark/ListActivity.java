@@ -1,20 +1,27 @@
 package com.supmark;
 
+import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -30,6 +37,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -39,6 +47,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static android.content.ClipDescription.MIMETYPE_TEXT_PLAIN;
 
 public class ListActivity extends AppCompatActivity {
 
@@ -52,6 +62,7 @@ public class ListActivity extends AppCompatActivity {
     private ProgressBar loadLists;
     private final String TAG = "123";
     final ArrayList<ListItem> lists = new ArrayList<ListItem>();
+    private List<String> userLists = new ArrayList<>();
     public String currentUser;
     private Context currContext;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -95,6 +106,14 @@ public class ListActivity extends AppCompatActivity {
                 }
             }
         });
+
+        findViewById(R.id.join_layout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                joinList();
+            }
+        });
+
     }
 
     private void shareList() {
@@ -104,7 +123,7 @@ public class ListActivity extends AppCompatActivity {
 
         LayoutInflater factory = LayoutInflater.from(this);
         final View view = factory.inflate(R.layout.share_list_layout, null);
-
+        builder.setCancelable(false);
         builder.setView(view);
 
         recyclerViewShareList = (RecyclerView) view.findViewById(R.id.share_lists_recycler_view);
@@ -117,11 +136,103 @@ public class ListActivity extends AppCompatActivity {
 
         builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dlg, int sumthin) {
-
+                findViewById(R.id.join_invite).performClick();
             }
         });
 
         builder.show();
+    }
+
+    private void joinList() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(ListActivity.this);
+        builder.setTitle("Join List!");
+        builder.setMessage("You need to paste the list's link you got, from the other user.");
+
+        LayoutInflater factory = LayoutInflater.from(this);
+        final View view = factory.inflate(R.layout.join_list_layout, null);
+        builder.setCancelable(false);
+        builder.setView(view);
+
+        final EditText listLink = view.findViewById(R.id.join_list);
+        final ImageView paste = view.findViewById(R.id.paste_list);
+
+        paste.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                String pasteData = "";
+
+                ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+
+                pasteData = item.getText().toString();
+
+                listLink.setText(pasteData);
+            }
+        });
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String m_Text = listLink.getText().toString();
+                if (!m_Text.equals("")) {
+                    addListByID(m_Text);
+                } else {
+                    Toast.makeText(view.getContext(), "No list added!", Toast.LENGTH_SHORT).show();
+                }
+                findViewById(R.id.join_invite).performClick();
+
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                findViewById(R.id.join_invite).performClick();
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    private void addListByID(final String listID) {
+
+        db.collection("lists")
+                .document(listID)
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable final DocumentSnapshot snapshot,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w(TAG, "Listen failed.", e);
+                            return;
+                        }
+
+                        if (snapshot != null && snapshot.exists()) {
+                            if (!userLists.contains(listID)) {
+                                lists.add(new ListItem(snapshot.getString("name"), listID));
+
+                                List<String> listIDs = new ArrayList<>();
+                                for (int i = 0; i < lists.size(); i++) {
+                                    listIDs.add(lists.get(i).getListID());
+                                }
+
+                                db.collection("users")
+                                        .document(currentUser)
+                                        .update("lists", FieldValue.arrayUnion(listID))
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                Toast.makeText(getApplicationContext(), snapshot.getString("name") + " list added!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            } else {
+                                Toast.makeText(getApplicationContext(), "You're already on this list!", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Wrong link!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
     }
 
     public String getId() {
@@ -150,7 +261,7 @@ public class ListActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
-                                        List<String> userLists = (List<String>) snapshot.get("lists");
+                                        userLists = (List<String>) snapshot.get("lists");
                                         if (!lists.isEmpty())
                                             lists.clear();
                                         for (QueryDocumentSnapshot document : task.getResult()) {
@@ -232,7 +343,6 @@ public class ListActivity extends AppCompatActivity {
     }
 
     public void deleteListFromUser(final ListItem list, final String user) {
-
         db.collection("users")
                 .document(user)
                 .addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -245,6 +355,7 @@ public class ListActivity extends AppCompatActivity {
 
                         if (snapshot != null && snapshot.exists()) {
                             List<String> lists = (List<String>) snapshot.get("lists");
+
                             for (int i = 0; i < lists.size(); i++) {
                                 if (lists.get(i).equals(list.getListID())) {
                                     lists.remove(i);
@@ -253,7 +364,7 @@ public class ListActivity extends AppCompatActivity {
                             }
                             db.collection("users")
                                     .document(user)
-                                    .update("lists", lists)
+                                    .update("lists", FieldValue.arrayRemove(list.getListID()))
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
@@ -353,11 +464,6 @@ public class ListActivity extends AppCompatActivity {
         }
     };
 
-    private void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-        Toast.makeText(parent.getContext(),
-                "OnItemSelectedListener : " + parent.getItemAtPosition(pos).toString(),
-                Toast.LENGTH_SHORT).show();
-    }
 
     private void setContext() {
         currContext = getApplicationContext();
@@ -368,4 +474,5 @@ public class ListActivity extends AppCompatActivity {
         super.onBackPressed();
         Animatoo.animateSlideLeft(this); //fire the slide left animation
     }
+
 }

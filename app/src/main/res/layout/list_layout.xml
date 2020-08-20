@@ -211,7 +211,7 @@
                             android:layout_marginStart="8dp"
                             android:layout_marginLeft="8dp"
                             android:text="Share List"
-                            app:layout_constraintBottom_toBottomOf="@+id/imageView3"
+                            app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintStart_toEndOf="@+id/imageView3"
                             app:layout_constraintTop_toTopOf="@+id/imageView3" />
 
@@ -219,7 +219,7 @@
                 </RelativeLayout>
 
                 <RelativeLayout
-                    android:id="@+id/copy_layout"
+                    android:id="@+id/join_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="5dp"
