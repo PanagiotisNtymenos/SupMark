@@ -25,6 +25,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -85,6 +86,24 @@ public class ListActivity extends AppCompatActivity {
 
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.add);
         addButton.setOnClickListener(mAddListener);
+
+        findViewById(R.id.dummy).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (moreOptions.getVisibility() == View.VISIBLE) {
+                    moreOptions.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+
+        findViewById(R.id.scrollView2constraint).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (moreOptions.getVisibility() == View.VISIBLE) {
+                    moreOptions.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
 
         findViewById(R.id.join_invite).setOnClickListener(new View.OnClickListener() {
             @Override
