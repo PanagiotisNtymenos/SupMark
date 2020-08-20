@@ -43,6 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
         android:layout_marginRight="32dp"
+        android:clickable="true"
         app:layout_constraintBottom_toBottomOf="@+id/share_list_link"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/share_list_name"

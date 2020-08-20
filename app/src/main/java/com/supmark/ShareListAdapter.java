@@ -1,17 +1,27 @@
 package com.supmark;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.blogspot.atifsoftwares.animatoolib.Animatoo;
+
 import java.text.BreakIterator;
 import java.util.ArrayList;
+
+import static android.content.Context.CLIPBOARD_SERVICE;
+
 
 public class ShareListAdapter extends RecyclerView.Adapter<ShareListAdapter.ShareListViewHolder> {
     private final ArrayList<ListItem> lists;
@@ -34,10 +44,8 @@ public class ShareListAdapter extends RecyclerView.Adapter<ShareListAdapter.Shar
         this.lists = lists;
     }
 
-    // Create new views (invoked by the layout manager)
     @Override
     public ShareListAdapter.ShareListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        // create a new view
         ConstraintLayout v = (ConstraintLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.share_list_item, parent, false);
 
         ShareListViewHolder vh = new ShareListViewHolder(v);
@@ -45,12 +53,21 @@ public class ShareListAdapter extends RecyclerView.Adapter<ShareListAdapter.Shar
     }
 
     @Override
-    public void onBindViewHolder(ShareListViewHolder holder, int position) {
-        // - get element from your dataset at this position
-        // - replace the contents of the view with that element
+    public void onBindViewHolder(final ShareListViewHolder holder, int position) {
+
         holder.listName.setText(lists.get(position).getListName());
         holder.listID.setText(lists.get(position).getListID());
         holder.listID.setTextIsSelectable(true);
+
+        holder.listCopy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(), holder.listID.getText(), Toast.LENGTH_SHORT).show();
+                ClipboardManager clipboard = (ClipboardManager) v.getContext().getSystemService(CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("listID", holder.listID.getText());
+                clipboard.setPrimaryClip(clip);
+            }
+        });
     }
 
     // Return the size of your dataset (invoked by the layout manager)

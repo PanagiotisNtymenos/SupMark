@@ -8,6 +8,7 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -113,6 +114,7 @@ public class ListActivity extends AppCompatActivity {
 
         shareListAdapter = new ShareListAdapter(lists);
         recyclerViewShareList.setAdapter(shareListAdapter);
+
         builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dlg, int sumthin) {
 
@@ -350,6 +352,12 @@ public class ListActivity extends AppCompatActivity {
             builder.show();
         }
     };
+
+    private void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+        Toast.makeText(parent.getContext(),
+                "OnItemSelectedListener : " + parent.getItemAtPosition(pos).toString(),
+                Toast.LENGTH_SHORT).show();
+    }
 
     private void setContext() {
         currContext = getApplicationContext();
