@@ -139,12 +139,12 @@ public class ListActivity extends AppCompatActivity {
 
     private void checkForUpdates() {
         AppUpdater appUpdater = new AppUpdater(this);
-        appUpdater.setGitHubUserAndRepo("PanagiotisNtymenos", "SupMark")
-                .setUpdateFrom(UpdateFrom.GITHUB)
+        appUpdater.setUpdateFrom(UpdateFrom.GITHUB)
+                .setGitHubUserAndRepo("PanagiotisNtymenos", "SupMark")
                 .setDisplay(Display.DIALOG)
                 .showAppUpdated(true)
-                .setTitleOnUpdateAvailable("Update available")
-                .setContentOnUpdateAvailable("Check out the latest version available of my app!")
+                .setTitleOnUpdateAvailable("Update available :)")
+                .setContentOnUpdateAvailable("Check out the latest version available of SupMark!")
                 .setTitleOnUpdateNotAvailable("Update not available")
                 .setContentOnUpdateNotAvailable("No update available. Check for updates again later!")
                 .setButtonUpdate("Update now?")
