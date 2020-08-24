@@ -1,10 +1,17 @@
 package com.supmark;
 
+import android.app.DownloadManager;
+import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +27,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -41,10 +49,14 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static androidx.core.content.FileProvider.getUriForFile;
 
 public class ListActivity extends AppCompatActivity {
 
@@ -138,17 +150,45 @@ public class ListActivity extends AppCompatActivity {
     }
 
     private void checkForUpdates() {
+        final AlertDialog loader = new AlertDialog.Builder(this).create();
+
+        LayoutInflater factory = LayoutInflater.from(this);
+        final View view = factory.inflate(R.layout.loader_layout, null);
+        loader.setCancelable(true);
+        loader.setView(view);
+        loader.show();
+
         AppUpdater appUpdater = new AppUpdater(this);
-        appUpdater.setUpdateFrom(UpdateFrom.GITHUB)
-                .setGitHubUserAndRepo("PanagiotisNtymenos", "SupMark")
+        appUpdater.setUpdateFrom(UpdateFrom.JSON)
+                .setUpdateJSON("https://github.com/PanagiotisNtymenos/SupMark/raw/master/update-changelog.json")
                 .setDisplay(Display.DIALOG)
                 .showAppUpdated(true)
                 .setTitleOnUpdateAvailable("Update available :)")
                 .setContentOnUpdateAvailable("Check out the latest version available of SupMark!")
                 .setTitleOnUpdateNotAvailable("Update not available")
                 .setContentOnUpdateNotAvailable("No update available. Check for updates again later!")
-                .setButtonUpdate("Update now?")
+                .setButtonUpdate("Update")
+                .setButtonUpdateClickListener(new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        loader.dismiss();
+                        findViewById(R.id.join_invite).performClick();
+                        Toast.makeText(getApplicationContext(), "Update started!", Toast.LENGTH_SHORT).show();
+//                        downloadAPK();
+                        RunAPK(getBaseContext());
+                    }
+                })
                 .setButtonDismiss("Maybe later")
+                .setButtonDismissClickListener(new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        loader.dismiss();
+                        findViewById(R.id.join_invite).performClick();
+                        Toast.makeText(getApplicationContext(), "Update canceled!", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setButtonDoNotShowAgain(null)
+                .setCancelable(false)
                 .start();
 
     }
@@ -501,9 +541,51 @@ public class ListActivity extends AppCompatActivity {
         }
     };
 
-
     private void setContext() {
         currContext = getApplicationContext();
+    }
+
+    private void downloadAPK() {
+        String url = "https://github.com/PanagiotisNtymenos/SupMark/raw/master/SupMark-latest.apk";
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setDescription("SupMark is updating...");
+        request.setTitle("SupMark");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            request.allowScanningByMediaScanner();
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        }
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "SupMark-latest.apk");
+
+        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        manager.enqueue(request);
+    }
+
+    private void RunAPK(Context context) {
+        requestPermissionsToRead();
+    }
+
+    private void requestPermissionsToRead() {
+        // ASK RUNTIME PERMISSIONS
+        ActivityCompat.requestPermissions(ListActivity.this, new String[]{READ_EXTERNAL_STORAGE}, 111);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (grantResults.length > 0) {
+            if (requestCode == 111 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                File file1 = new File(downloads + "//SupMark-latest.apk");//downloads.listFiles()[0];
+
+                Uri contentUri1 = getUriForFile(this, BuildConfig.APPLICATION_ID, file1);
+
+                Intent intent = new Intent(Intent.ACTION_VIEW, contentUri1);
+                intent.setDataAndType(contentUri1, "application/vnd.android.package-archive");
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(intent);
+            }
+        }
     }
 
     @Override
