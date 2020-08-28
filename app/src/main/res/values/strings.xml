@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SupMark</string>
+    <string name="update_apk_location">https://github.com/PanagiotisNtymenos/SupMark/raw/master/app-debug.apk</string>
 </resources>

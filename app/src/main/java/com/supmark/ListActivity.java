@@ -2,16 +2,19 @@ package com.supmark;
 
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,10 +27,12 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -54,6 +59,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static androidx.core.content.FileProvider.getUriForFile;
@@ -72,6 +78,7 @@ public class ListActivity extends AppCompatActivity {
     private final ArrayList<ListItem> lists = new ArrayList<ListItem>();
     private List<String> userLists = new ArrayList<>();
     public String currentUser;
+    public String currentUsername;
     private Context currContext;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -79,6 +86,10 @@ public class ListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.list_layout);
+
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+
         recyclerView = findViewById(R.id.recycler_view);
 
         foundLists = findViewById(R.id.load_lists_text);
@@ -306,7 +317,7 @@ public class ListActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(), "You're already on this list!", Toast.LENGTH_SHORT).show();
                             }
                         } else {
-                            Toast.makeText(getApplicationContext(), "Wrong link!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Wrong link. No such list exists!", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -329,6 +340,7 @@ public class ListActivity extends AppCompatActivity {
 
                 if (snapshot != null && snapshot.exists()) {
                     TextView username = findViewById(R.id.username);
+                    currentUsername = snapshot.getString("name");
                     username.setText(snapshot.getString("name"));
                     username.setSelected(true);
 
@@ -373,7 +385,7 @@ public class ListActivity extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        mAdapter = new ListAdapter(lists);
+        mAdapter = new ListAdapter(lists, currentUsername);
         mAdapter.notifyDataSetChanged();
         recyclerView.setAdapter(mAdapter);
     }
@@ -574,7 +586,7 @@ public class ListActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (grantResults.length > 0) {
             if (requestCode == 111 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
+/*
                 File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                 File file1 = new File(downloads + "//SupMark-latest.apk");//downloads.listFiles()[0];
 
@@ -584,6 +596,49 @@ public class ListActivity extends AppCompatActivity {
                 intent.setDataAndType(contentUri1, "application/vnd.android.package-archive");
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivity(intent);
+ */
+                String destination = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/";
+                String fileName = "SupMark-" + BuildConfig.VERSION_NAME + ".apk";
+                destination += fileName;
+                final Uri uri = Uri.parse("file://" + destination);
+
+                //Delete update file if exists
+                File file = new File(destination);
+                if (file.exists())
+                    //file.delete() - test this, I think sometimes it doesnt work
+                    file.delete();
+
+                //get url of app on server
+                String url = ListActivity.this.getString(R.string.update_apk_location);
+
+                //set downloadmanager
+                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                request.setDescription("Downloading updates...");
+                request.setTitle("SupMark");
+
+                //set destination
+                request.setDestinationUri(uri);
+
+                // get download service and enqueue file
+                final DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                final long downloadId = manager.enqueue(request);
+
+                //set BroadcastReceiver to install app when .apk is downloaded
+                BroadcastReceiver onComplete = new BroadcastReceiver() {
+                    public void onReceive(Context ctxt, Intent intent) {
+                        Intent install = new Intent(Intent.ACTION_VIEW);
+                        install.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        install.setDataAndType(uri, manager.getMimeTypeForDownloadedFile(downloadId));
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        startActivity(install);
+
+                        unregisterReceiver(this);
+                        finish();
+                    }
+                };
+                //register receiver for when .apk download is compete
+                registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
             }
         }
     }

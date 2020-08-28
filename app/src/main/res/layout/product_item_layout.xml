@@ -69,5 +69,32 @@
             app:layout_constraintStart_toEndOf="@+id/image_constr"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <TextView
+            android:id="@+id/user_added"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="1"
+            android:singleLine="true"
+            android:text="User"
+            android:textColor="@color/colorPrimary"
+            app:layout_constraintBottom_toBottomOf="@+id/image_constr"
+            app:layout_constraintEnd_toEndOf="@+id/product_name"
+            app:layout_constraintTop_toBottomOf="@+id/product_name" />
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="2dp"
+            android:text="BY"
+            android:textSize="8sp"
+            app:layout_constraintBottom_toBottomOf="@+id/user_added"
+            app:layout_constraintEnd_toStartOf="@+id/user_added" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

@@ -49,6 +49,7 @@ public class ProductActivity extends AppCompatActivity {
     private List<ProductItem> allProducts;
     private ArrayList<ProductItem> listProducts = new ArrayList<>();
     private String currListID;
+    private String user;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
@@ -59,6 +60,7 @@ public class ProductActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String currentList = intent.getStringExtra("LIST_ID");
         String currentListName = intent.getStringExtra("LIST_NAME");
+        user = intent.getStringExtra("USER");
 
         TextView listNameDisplay = findViewById(R.id.list_name_display_text);
         listNameDisplay.setText(currentListName);
@@ -89,6 +91,17 @@ public class ProductActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.hide_keyboard).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchBox = findViewById(R.id.search_products);
+                if (!searchBox.getText().toString().equals("")) {
+                    hideKeyboard(getApplicationContext(), v);
+                    searchBox.showDropDown();
+                }
+            }
+        });
+
     }
 
     public void getProductsFromList(final String currentList) {
@@ -102,8 +115,21 @@ public class ProductActivity extends AppCompatActivity {
                 }
 
                 if (snapshot != null && snapshot.exists()) {
-                    final List<String> productsInList = (List<String>) snapshot.get("products");
+                    List<String> productsInListDB = (List<String>) snapshot.get("products");
                     currListID = snapshot.getId();
+                    final List<String> productsInList = new ArrayList<>();
+                    final List<String> userAddedProduct = new ArrayList<>();
+
+                    for (int i = 0; i < productsInListDB.size(); i++) {
+                        String string = productsInListDB.get(i);
+                        String[] parts = string.split("-|-");
+                        String product = parts[0];
+                        String user = parts[2];
+
+                        productsInList.add(product);
+                        userAddedProduct.add(user);
+                    }
+
 
                     db.collection("products")
                             .get()
@@ -115,11 +141,12 @@ public class ProductActivity extends AppCompatActivity {
                                             listProducts.clear();
                                         allProducts = new ArrayList<>();
                                         for (QueryDocumentSnapshot document : task.getResult()) {
+
                                             allProducts.add(new ProductItem(document.getString("image"), document.getId()));
                                             for (int i = 0; i < productsInList.size(); i++) {
                                                 final int productPosition = i;
                                                 if (productsInList.get(productPosition).equals(document.getId())) {
-                                                    listProducts.add(new ProductItem(document.getString("image"), document.getId()));
+                                                    listProducts.add(new ProductItem(document.getString("image"), document.getId(), userAddedProduct.get(productPosition)));
                                                 }
                                             }
                                         }
@@ -170,7 +197,12 @@ public class ProductActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "'" + product.getProduct() + "' is already on the list!", Toast.LENGTH_SHORT).show();
         } else {
             productNames.add(product.getProduct());
-            toUpdate.put("products", productNames);
+            List<String> productsWithUsers = new ArrayList<>();
+            for (int i = 0; i < productNames.size(); i++) {
+                productsWithUsers.add(productNames.get(i) + "-|-" + user);
+            }
+
+            toUpdate.put("products", productsWithUsers);
 
             db.collection("lists")
                     .document(currListID)

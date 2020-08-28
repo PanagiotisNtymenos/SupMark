@@ -89,13 +89,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
                 android:layout_marginBottom="8dp"
                 android:completionThreshold="1"
                 android:hint="Search..."
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/hide_keyboard"
                 app:layout_constraintStart_toEndOf="@+id/imageView2"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -110,6 +108,17 @@
                 app:layout_constraintTop_toTopOf="@+id/search_products"
                 app:srcCompat="@drawable/ic_baseline_search_24"
                 tools:ignore="VectorDrawableCompat" />
+
+            <ImageView
+                android:id="@+id/hide_keyboard"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                app:layout_constraintBottom_toBottomOf="@+id/search_products"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/search_products"
+                app:srcCompat="@drawable/ic_baseline_keyboard_24" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

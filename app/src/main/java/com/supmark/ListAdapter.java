@@ -23,6 +23,7 @@ import java.util.ArrayList;
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder> {
 
     private static ArrayList<ListItem> supermarkets;
+    private String username;
     public int p;
 
     public class CardViewHolder extends RecyclerView.ViewHolder {
@@ -130,8 +131,9 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
         return cvh;
     }
 
-    public ListAdapter(ArrayList<ListItem> supermarketsList) {
-        supermarkets = supermarketsList;
+    public ListAdapter(ArrayList<ListItem> supermarketsList, String username) {
+        this.supermarkets = supermarketsList;
+        this.username = username;
     }
 
     @Override
@@ -146,6 +148,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
                 Intent intent = new Intent(v.getContext(), ProductActivity.class);
                 intent.putExtra("LIST_ID", currItem.getListID());
                 intent.putExtra("LIST_NAME", currItem.getListName());
+                intent.putExtra("USER", username);
                 v.getContext().startActivity(intent);
                 Animatoo.animateSlideLeft(v.getContext());
             }

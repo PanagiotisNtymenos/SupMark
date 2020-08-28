@@ -58,15 +58,21 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
 
         TextView product;
         ImageView productImage;
+        TextView productUser;
 
         product = holder.itemView.findViewById(R.id.product_name);
         productImage = holder.itemView.findViewById(R.id.product_image);
+        productUser = holder.itemView.findViewById(R.id.user_added);
+        productUser.setSelected(true);
+
         final ProgressBar productImageProgress = holder.itemView.findViewById(R.id.product_image_progressBar);
 
         ProductItem currItem = products.get(position);
 
         product.setText(currItem.getProduct());
         String url = currItem.getProductImage();
+        productUser.setText(currItem.getUser());
+
         Glide.with(getContext()).load(url).listener(new RequestListener() {
             @Override
             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target target, boolean isFirstResource) {
