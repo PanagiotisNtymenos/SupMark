@@ -1,7 +1,6 @@
-package com.supmark;
+package com.supmark.activity;
 
 import android.app.DownloadManager;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -27,12 +26,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -53,16 +50,17 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.supmark.ListAdapter;
+import com.supmark.R;
+import com.supmark.ShareListAdapter;
+import com.supmark.model.List;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static androidx.core.content.FileProvider.getUriForFile;
 
 public class ListActivity extends AppCompatActivity {
 
@@ -75,8 +73,8 @@ public class ListActivity extends AppCompatActivity {
     private TextView foundLists;
     private ProgressBar loadLists;
     private final String TAG = "ListActivity";
-    private final ArrayList<ListItem> lists = new ArrayList<ListItem>();
-    private List<String> userLists = new ArrayList<>();
+    private final ArrayList<List> lists = new ArrayList<List>();
+    private java.util.List userLists = new ArrayList<>();
     public String currentUser;
     public String currentUsername;
     private Context currContext;
@@ -100,7 +98,7 @@ public class ListActivity extends AppCompatActivity {
 
         setContext();
         currentUser = getId();
-        getLists(currentUser);
+        onGetLists(currentUser);
 
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.add);
         addButton.setOnClickListener(mAddListener);
@@ -297,9 +295,9 @@ public class ListActivity extends AppCompatActivity {
 
                         if (snapshot != null && snapshot.exists()) {
                             if (!userLists.contains(listID)) {
-                                lists.add(new ListItem(snapshot.getString("name"), listID));
+                                lists.add(new List(snapshot.getString("name"), listID));
 
-                                List<String> listIDs = new ArrayList<>();
+                                java.util.List listIDs = new ArrayList<>();
                                 for (int i = 0; i < lists.size(); i++) {
                                     listIDs.add(lists.get(i).getListID());
                                 }
@@ -328,7 +326,7 @@ public class ListActivity extends AppCompatActivity {
         return id;
     }
 
-    private void getLists(String currentUser) {
+    private void onGetLists(String currentUser) {
 
         db.collection("users").document(currentUser).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -350,13 +348,13 @@ public class ListActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
-                                        userLists = (List<String>) snapshot.get("lists");
+                                        userLists = (java.util.List) snapshot.get("lists");
                                         if (!lists.isEmpty())
                                             lists.clear();
                                         for (QueryDocumentSnapshot document : task.getResult()) {
 
                                             if (userLists.contains(document.getId()))
-                                                lists.add(new ListItem(document.getString("name"), document.getId()));
+                                                lists.add(new List(document.getString("name"), document.getId()));
                                         }
                                         if (lists.isEmpty()) {
                                             foundLists.setVisibility(View.VISIBLE);
@@ -381,7 +379,7 @@ public class ListActivity extends AppCompatActivity {
 
     }
 
-    private void setLists(ArrayList<ListItem> lists) {
+    private void setLists(ArrayList<List> lists) {
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
@@ -400,7 +398,7 @@ public class ListActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-                        lists.add(new ListItem(m_Text, documentReference.getId()));
+                        lists.add(new List(m_Text, documentReference.getId()));
                         addListToUser(lists, m_Text);
                     }
                 })
@@ -412,9 +410,9 @@ public class ListActivity extends AppCompatActivity {
                 });
     }
 
-    private void addListToUser(final ArrayList<ListItem> lists, final String listName) {
+    private void addListToUser(final ArrayList<List> lists, final String listName) {
         Map<String, Object> toUpdate = new HashMap<String, Object>();
-        List<String> listIDs = new ArrayList<>();
+        java.util.List listIDs = new ArrayList<>();
         for (int i = 0; i < lists.size(); i++) {
             listIDs.add(lists.get(i).getListID());
         }
@@ -431,7 +429,7 @@ public class ListActivity extends AppCompatActivity {
                 });
     }
 
-    public void deleteListFromUser(final ListItem list, final String user) {
+    public void deleteListFromUser(final List list, final String user) {
         db.collection("users")
                 .document(user)
                 .addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -443,7 +441,7 @@ public class ListActivity extends AppCompatActivity {
                         }
 
                         if (snapshot != null && snapshot.exists()) {
-                            List<String> lists = (List<String>) snapshot.get("lists");
+                            java.util.List lists = (java.util.List) snapshot.get("lists");
 
                             for (int i = 0; i < lists.size(); i++) {
                                 if (lists.get(i).equals(list.getListID())) {
@@ -598,11 +596,12 @@ public class ListActivity extends AppCompatActivity {
                 startActivity(intent);
  */
                 String destination = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/";
-                String fileName = "SupMark-" + BuildConfig.VERSION_NAME + ".apk";
+                String fileName = "app-debug.apk";
                 destination += fileName;
                 final Uri uri = Uri.parse("file://" + destination);
 
                 //Delete update file if exists
+
                 File file = new File(destination);
                 if (file.exists())
                     //file.delete() - test this, I think sometimes it doesnt work

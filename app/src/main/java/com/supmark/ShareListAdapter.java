@@ -2,8 +2,6 @@ package com.supmark;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,16 +13,15 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.blogspot.atifsoftwares.animatoolib.Animatoo;
+import com.supmark.model.List;
 
-import java.text.BreakIterator;
 import java.util.ArrayList;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
 
 public class ShareListAdapter extends RecyclerView.Adapter<ShareListAdapter.ShareListViewHolder> {
-    private final ArrayList<ListItem> lists;
+    private final ArrayList<List> lists;
 
     public static class ShareListViewHolder extends RecyclerView.ViewHolder {
         public TextView listName;
@@ -40,7 +37,7 @@ public class ShareListAdapter extends RecyclerView.Adapter<ShareListAdapter.Shar
         }
     }
 
-    public ShareListAdapter(ArrayList<ListItem> lists) {
+    public ShareListAdapter(ArrayList<List> lists) {
         this.lists = lists;
     }
 

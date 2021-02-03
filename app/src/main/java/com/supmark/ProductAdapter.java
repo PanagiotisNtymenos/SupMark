@@ -1,15 +1,20 @@
 package com.supmark;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.text.InputType;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -19,11 +24,12 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.supmark.model.Product;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -31,14 +37,14 @@ import javax.annotation.Nullable;
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardViewHolder> {
 
     private final String listID;
-    private ArrayList<ProductItem> products;
-    public ProductItem mRecentlyDeletedItem;
+    private ArrayList<Product> products;
+    public Product mRecentlyDeletedItem;
     public int mRecentlyDeletedItemPosition;
     private Context context;
     private View view;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    public ProductAdapter(ArrayList<ProductItem> products, View view, Context context, String currListID) {
+    public ProductAdapter(ArrayList<Product> products, View view, Context context, String currListID) {
         this.products = products;
         this.context = context;
         this.view = view;
@@ -59,19 +65,27 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
         TextView product;
         ImageView productImage;
         TextView productUser;
+        TextView productQuantity;
+        TextView productNotes;
 
         product = holder.itemView.findViewById(R.id.product_name);
         productImage = holder.itemView.findViewById(R.id.product_image);
         productUser = holder.itemView.findViewById(R.id.user_added);
+        productQuantity = holder.itemView.findViewById(R.id.quantity);
+        productNotes = holder.itemView.findViewById(R.id.notes);
+
+        product.setSelected(true);
         productUser.setSelected(true);
 
         final ProgressBar productImageProgress = holder.itemView.findViewById(R.id.product_image_progressBar);
 
-        ProductItem currItem = products.get(position);
+        Product currItem = products.get(position);
 
         product.setText(currItem.getProduct());
         String url = currItem.getProductImage();
         productUser.setText(currItem.getUser());
+        productQuantity.setText(String.valueOf(currItem.getQuantity()));
+        productNotes.setText(currItem.getNotes());
 
         Glide.with(getContext()).load(url).listener(new RequestListener() {
             @Override
@@ -86,6 +100,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
                 return false;
             }
         }).into(productImage);
+
     }
 
     @Override
@@ -94,19 +109,14 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
     }
 
     public void deleteItem(int position) {
+        Map<String, Object> toUpdate = new HashMap<>();
+
+        toUpdate.put("products." + products.get(position).getProduct(), FieldValue.delete());
+
         mRecentlyDeletedItem = products.get(position);
         mRecentlyDeletedItemPosition = position;
         products.remove(position);
         notifyItemRemoved(position);
-
-        Map<String, Object> toUpdate = new HashMap<String, Object>();
-        List<String> productNames = new ArrayList<>();
-
-        for (int i = 0; i < products.size(); i++) {
-            productNames.add(products.get(i).getProduct());
-        }
-
-        toUpdate.put("products", productNames);
 
         showUndoSnackbar(toUpdate);
     }
@@ -159,9 +169,100 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
 
     public class CardViewHolder extends RecyclerView.ViewHolder {
 
-        public CardViewHolder(@NonNull View itemView) {
+        public CardViewHolder(@NonNull final View itemView) {
             super(itemView);
+            final TextView quantityView = itemView.findViewById(R.id.quantity);
+
+            itemView.findViewById(R.id.add_quantity).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final int p = getLayoutPosition();
+                    int quantity = Integer.parseInt(quantityView.getText().toString());
+                    quantity = quantity + 1;
+                    products.get(p).setQuantity(quantity);
+                    quantityView.setText(String.valueOf(quantity));
+                    adjustQuantity(products.get(p));
+                }
+            });
+
+            itemView.findViewById(R.id.remove_quantity).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final int p = getLayoutPosition();
+                    int quantity = Integer.parseInt(quantityView.getText().toString());
+                    if (quantity - 1 > 0) {
+                        quantity = quantity - 1;
+                        products.get(p).setQuantity(quantity);
+                        quantityView.setText(String.valueOf(quantity));
+                        adjustQuantity(products.get(p));
+                    }
+                }
+            });
+
+            itemView.findViewById(R.id.constraint_to_add_notes).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final int p = getLayoutPosition();
+                    addNotes(products.get(p), p);
+                }
+            });
 
         }
     }
+
+    private void adjustQuantity(Product product) {
+        Map<String, Object> toUpdate = new HashMap<>();
+
+        toUpdate.put("user", product.getUser());
+        toUpdate.put("quantity", String.valueOf(product.getQuantity()));
+        toUpdate.put("notes", product.getNotes());
+
+        db.collection("lists")
+                .document(listID).update("products." + product.getProduct(), toUpdate);
+
+    }
+
+
+    private void addNotes(final Product product, final int p) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+        builder.setTitle("Add Notes!");
+        builder.setMessage(product.getProduct());
+
+        final EditText input = new EditText(view.getContext());
+
+        if (!product.getNotes().equals("")) {
+            input.setText(product.getNotes());
+        }
+
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String m_Text;
+                m_Text = input.getText().toString();
+
+                product.setNotes(m_Text);
+
+                Map<String, Object> toUpdate = new HashMap<>();
+
+                toUpdate.put("user", product.getUser());
+                toUpdate.put("quantity", String.valueOf(product.getQuantity()));
+                toUpdate.put("notes", m_Text);
+
+                db.collection("lists")
+                        .document(listID).update("products." + product.getProduct(), toUpdate);
+
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
+    }
+
 }

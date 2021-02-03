@@ -17,14 +17,16 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.blogspot.atifsoftwares.animatoolib.Animatoo;
+import com.supmark.activity.ProductActivity;
+import com.supmark.model.List;
+import com.supmark.activity.ListActivity;
 
 import java.util.ArrayList;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder> {
 
-    private static ArrayList<ListItem> supermarkets;
+    private static ArrayList<List> supermarkets;
     private String username;
-    public int p;
 
     public class CardViewHolder extends RecyclerView.ViewHolder {
 
@@ -61,7 +63,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
                     final int p = getLayoutPosition();
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-                    builder.setTitle("Edit Supermarket");
+                    builder.setTitle("Edit List");
                     builder.setMessage("Specify the name of the entry.");
 
                     final EditText input = new EditText(view.getContext());
@@ -75,7 +77,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
                             String m_Text;
                             m_Text = input.getText().toString();
                             if (!m_Text.equals("")) {
-                                supermarkets.set(p, new ListItem(m_Text, "2"));
+                                supermarkets.set(p, new List(m_Text, "2"));
                                 notifyItemChanged(p);
                             }
                         }
@@ -131,14 +133,14 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
         return cvh;
     }
 
-    public ListAdapter(ArrayList<ListItem> supermarketsList, String username) {
+    public ListAdapter(ArrayList<List> supermarketsList, String username) {
         this.supermarkets = supermarketsList;
         this.username = username;
     }
 
     @Override
     public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
-        final ListItem currItem = supermarkets.get(position);
+        final List currItem = supermarkets.get(position);
 
         holder.listName.setText(currItem.getListName());
 
@@ -161,7 +163,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.CardViewHolder
         return supermarkets.size();
     }
 
-    public ListItem getItem(int position) {
+    public List getItem(int position) {
         return supermarkets.get(position);
     }
 

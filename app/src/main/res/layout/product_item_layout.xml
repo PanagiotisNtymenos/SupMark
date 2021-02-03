@@ -27,7 +27,6 @@
             android:id="@+id/image_constr"
             android:layout_width="80dp"
             android:layout_height="80dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -60,29 +59,32 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginRight="16dp"
+            android:marqueeRepeatLimit="1"
+            android:singleLine="true"
             android:text="Product"
             android:textSize="18sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/image_constr"
+            app:layout_constraintEnd_toStartOf="@+id/constraintLayout2"
             app:layout_constraintStart_toEndOf="@+id/image_constr"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@+id/image_constr" />
 
         <TextView
             android:id="@+id/user_added"
             android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:ellipsize="marquee"
+            android:layout_marginTop="4dp"
+            android:ellipsize="none"
             android:marqueeRepeatLimit="1"
             android:singleLine="true"
             android:text="User"
             android:textColor="@color/colorPrimary"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="@+id/image_constr"
-            app:layout_constraintEnd_toEndOf="@+id/product_name"
-            app:layout_constraintTop_toBottomOf="@+id/product_name" />
+            app:layout_constraintEnd_toStartOf="@+id/constraintLayout2"
+            app:layout_constraintTop_toBottomOf="@+id/notes"
+            app:layout_constraintVertical_bias="0.0" />
 
         <TextView
             android:id="@+id/textView6"
@@ -95,6 +97,82 @@
             android:textSize="8sp"
             app:layout_constraintBottom_toBottomOf="@+id/user_added"
             app:layout_constraintEnd_toStartOf="@+id/user_added" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginRight="16dp"
+            app:layout_constraintBottom_toBottomOf="@+id/product_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/product_name">
+
+            <TextView
+                android:id="@+id/quantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:textColor="#000000"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageButton
+                android:id="@+id/add_quantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp"
+                android:background="@null"
+                android:src="@drawable/ic_baseline_add_circle_outline_24_light"
+                app:layout_constraintBottom_toBottomOf="@+id/quantity"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/quantity"
+                app:layout_constraintTop_toTopOf="@+id/quantity" />
+
+            <ImageButton
+                android:id="@+id/remove_quantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                android:background="@null"
+                android:src="@drawable/ic_outline_remove_circle_outline_24"
+                app:layout_constraintBottom_toBottomOf="@+id/quantity"
+                app:layout_constraintEnd_toStartOf="@+id/quantity"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/quantity" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/notes"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:textColor="@color/colorPrimary"
+            android:textStyle="italic"
+            app:layout_constraintEnd_toEndOf="@+id/product_name"
+            app:layout_constraintStart_toEndOf="@+id/image_constr"
+            app:layout_constraintTop_toBottomOf="@+id/product_name" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraint_to_add_notes"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/notes"
+            app:layout_constraintEnd_toEndOf="@+id/product_name"
+            app:layout_constraintStart_toEndOf="@+id/image_constr"
+            app:layout_constraintTop_toTopOf="parent">
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

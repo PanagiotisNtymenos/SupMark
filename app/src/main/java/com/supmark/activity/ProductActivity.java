@@ -1,4 +1,4 @@
-package com.supmark;
+package com.supmark.activity;
 
 import android.app.Activity;
 import android.content.Context;
@@ -29,15 +29,24 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.supmark.AutoCompleteProductSearchAdapter;
+import com.supmark.ProductAdapter;
+import com.supmark.R;
+import com.supmark.SwipeToDeleteCallback;
+import com.supmark.model.Product;
+import com.supmark.activity.ListActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.internal.Internal;
+
 
 public class ProductActivity extends AppCompatActivity {
 
+    private final String imageQueryURL = "https://drive.google.com/uc?export=view&id=";
     private RecyclerView recyclerView;
     private AutoCompleteTextView searchBox;
     private RecyclerView.Adapter mAdapter;
@@ -46,8 +55,8 @@ public class ProductActivity extends AppCompatActivity {
     private TextView loadProductText;
     private ProgressBar loadProductBar;
     private final String TAG = "123";
-    private List<ProductItem> allProducts;
-    private ArrayList<ProductItem> listProducts = new ArrayList<>();
+    private List<Product> allProducts;
+    private ArrayList<Product> listProducts = new ArrayList<>();
     private String currListID;
     private String user;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -80,6 +89,7 @@ public class ProductActivity extends AppCompatActivity {
                 addProduct(adapter.getItem(position));
             }
         });
+
 
         findViewById(R.id.constraintLayout).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,21 +125,25 @@ public class ProductActivity extends AppCompatActivity {
                 }
 
                 if (snapshot != null && snapshot.exists()) {
-                    List<String> productsInListDB = (List<String>) snapshot.get("products");
-                    currListID = snapshot.getId();
+                    HashMap<String, HashMap<String, String>> productsInListDB = (HashMap<String, HashMap<String, String>>) snapshot.get("products");
                     final List<String> productsInList = new ArrayList<>();
                     final List<String> userAddedProduct = new ArrayList<>();
+                    final List<Integer> quantityProduct = new ArrayList<>();
+                    final List<String> notesProduct = new ArrayList<>();
+                    currListID = snapshot.getId();
 
-                    for (int i = 0; i < productsInListDB.size(); i++) {
-                        String string = productsInListDB.get(i);
-                        String[] parts = string.split("-|-");
-                        String product = parts[0];
-                        String user = parts[2];
+                    for (Map.Entry<String, HashMap<String, String>> currProduct : productsInListDB.entrySet()) {
+                        String product = currProduct.getKey();
+                        HashMap<String, String> productDetails = currProduct.getValue();
+                        String user = productDetails.get("user");
+                        int quantity = Integer.parseInt(productDetails.get("quantity"));
+                        String notes = productDetails.get("notes");
 
                         productsInList.add(product);
                         userAddedProduct.add(user);
+                        quantityProduct.add(quantity);
+                        notesProduct.add(notes);
                     }
-
 
                     db.collection("products")
                             .get()
@@ -142,11 +156,11 @@ public class ProductActivity extends AppCompatActivity {
                                         allProducts = new ArrayList<>();
                                         for (QueryDocumentSnapshot document : task.getResult()) {
 
-                                            allProducts.add(new ProductItem(document.getString("image"), document.getId()));
+                                            allProducts.add(new Product(document.getString("image"), document.getId()));
                                             for (int i = 0; i < productsInList.size(); i++) {
                                                 final int productPosition = i;
                                                 if (productsInList.get(productPosition).equals(document.getId())) {
-                                                    listProducts.add(new ProductItem(document.getString("image"), document.getId(), userAddedProduct.get(productPosition)));
+                                                    listProducts.add(new Product(document.getString("image"), document.getId(), userAddedProduct.get(productPosition), quantityProduct.get(productPosition), notesProduct.get(productPosition)));
                                                 }
                                             }
                                         }
@@ -166,7 +180,7 @@ public class ProductActivity extends AppCompatActivity {
 
     }
 
-    public void setProductsList(ArrayList<ProductItem> products) {
+    public void setProductsList(ArrayList<Product> products) {
         adapter = new AutoCompleteProductSearchAdapter(this, allProducts, products);
         searchBox.setAdapter(adapter);
         if (mAdapter == null) {
@@ -185,7 +199,7 @@ public class ProductActivity extends AppCompatActivity {
         }
     }
 
-    public void addProduct(final ProductItem product) {
+    public void addProduct(final Product product) {
         Map<String, Object> toUpdate = new HashMap<String, Object>();
         List<String> productNames = new ArrayList<>();
 
@@ -196,24 +210,54 @@ public class ProductActivity extends AppCompatActivity {
         if (productNames.contains(product.getProduct())) {
             Toast.makeText(getApplicationContext(), "'" + product.getProduct() + "' is already on the list!", Toast.LENGTH_SHORT).show();
         } else {
-            productNames.add(product.getProduct());
-            List<String> productsWithUsers = new ArrayList<>();
-            for (int i = 0; i < productNames.size(); i++) {
-                productsWithUsers.add(productNames.get(i) + "-|-" + user);
-            }
+//            productNames.add(product.getProduct());
+//            HashMap<String, String> productDetails = new HashMap<>();
+//            HashMap<String, HashMap<String, String>> newProduct = new HashMap<>();
+//            for (int i = 0; i < productNames.size(); i++) {
+//
+//                if (i == productNames.size() - 1) {
+//                    productDetails.put("user", user);
+//                    productDetails.put("quantity", "1");
+//                    productDetails.put("notes", "");
+//                } else {
+//                    productDetails.put("user", listProducts.get(i).getUser());
+//                    productDetails.put("quantity", String.valueOf(listProducts.get(i).getQuantity()));
+//                    productDetails.put("notes", String.valueOf(listProducts.get(i).getNotes()));
+//
+//                }
+//                newProduct.put(productNames.get(i), productDetails);
+//            }
+//
+//            toUpdate.put("products."+productNames.get(i), newProduct);
+//
+//            db.collection("lists")
+//                    .document(currListID)
+//                    .update(toUpdate)
+//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void aVoid) {
+//                            hideKeyboard(getApplicationContext(), searchBox.getRootView());
+//                            Toast.makeText(getApplicationContext(), "'" + product.getProduct() + "' added to the list!", Toast.LENGTH_SHORT).show();
+//                            mAdapter.notifyDataSetChanged();
+//
+//                        }
+//                    });
 
-            toUpdate.put("products", productsWithUsers);
+            HashMap<String, String> productDetails = new HashMap<>();
+            productDetails.put("user", user);
+            productDetails.put("quantity", "1");
+            productDetails.put("notes", "");
 
             db.collection("lists")
                     .document(currListID)
-                    .update(toUpdate)
+                    .update("products." + product.getProduct(), productDetails)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
                             hideKeyboard(getApplicationContext(), searchBox.getRootView());
                             Toast.makeText(getApplicationContext(), "'" + product.getProduct() + "' added to the list!", Toast.LENGTH_SHORT).show();
                             mAdapter.notifyDataSetChanged();
-                            //                            setProductsList(listProducts);
+
                         }
                     });
         }

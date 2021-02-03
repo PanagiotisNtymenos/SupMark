@@ -1,8 +1,12 @@
-package com.supmark;
+package com.supmark.model;
 
-public class ListItem {
+public class List {
     String listName;
     String listID;
+
+    public List() {
+
+    }
 
     public String getListName() {
         return listName;
@@ -20,7 +24,7 @@ public class ListItem {
         this.listID = listID;
     }
 
-    public ListItem(String listName, String listID) {
+    public List(String listName, String listID) {
         this.listName = listName;
         this.listID = listID;
     }

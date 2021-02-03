@@ -18,17 +18,18 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.supmark.model.Product;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> {
+public class AutoCompleteProductSearchAdapter extends ArrayAdapter<Product> {
 
-    private List<ProductItem> productListFull;
-    private List<ProductItem> productsInList;
+    private List<Product> productListFull;
+    private List<Product> productsInList;
 
-    public AutoCompleteProductSearchAdapter(@NonNull Context context, @NonNull List<ProductItem> productList, ArrayList<ProductItem> products) {
+    public AutoCompleteProductSearchAdapter(@NonNull Context context, @NonNull List<Product> productList, ArrayList<Product> products) {
         super(context, 0, productList);
 
         productListFull = new ArrayList<>(productList);
@@ -54,7 +55,7 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> 
         ImageView add = convertView.findViewById(R.id.add_product);
         ImageView tick = convertView.findViewById(R.id.tick_product);
 
-        ProductItem productItem = getItem(position);
+        Product productItem = getItem(position);
         if (productItem != null) {
             textViewName.setText(productItem.getProduct());
             String url = productItem.getProductImage();
@@ -75,7 +76,7 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> 
             }).into(imageViewProduct);
 
             ArrayList<String> productNamesInList = new ArrayList<>();
-            for (ProductItem pi : productsInList) {
+            for (Product pi : productsInList) {
                 productNamesInList.add(pi.getProduct());
             }
 
@@ -96,14 +97,14 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> 
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
             FilterResults results = new FilterResults();
-            List<ProductItem> suggestions = new ArrayList<>();
+            List<Product> suggestions = new ArrayList<>();
 
             if (constraint == null || constraint.length() == 0) {
                 suggestions.addAll(productListFull);
             } else {
                 String filterPattern = constraint.toString().toLowerCase().trim();
 
-                for (ProductItem item : productListFull) {
+                for (Product item : productListFull) {
 
                     String ignoreAccent = removeAccents(item.getProduct().toLowerCase().trim());
 
@@ -127,7 +128,7 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<ProductItem> 
 
         @Override
         public CharSequence convertResultToString(Object resultValue) {
-            return ((ProductItem) resultValue).getProduct();
+            return ((Product) resultValue).getProduct();
         }
 
         private String removeAccents(String prod) {
