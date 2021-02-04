@@ -63,7 +63,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
     public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
 
         TextView product;
-        ImageView productImage;
+        final ImageView productImage;
         TextView productUser;
         TextView productQuantity;
         TextView productNotes;
@@ -87,20 +87,24 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.CardView
         productQuantity.setText(String.valueOf(currItem.getQuantity()));
         productNotes.setText(currItem.getNotes());
 
-        Glide.with(getContext()).load(url).listener(new RequestListener() {
-            @Override
-            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target target, boolean isFirstResource) {
-                productImageProgress.setVisibility(View.INVISIBLE);
-                return false;
-            }
+        if (url.equals("")) {
+            productImage.setImageResource(R.drawable.logo);
+            productImageProgress.setVisibility(View.INVISIBLE);
+        } else {
+            Glide.with(getContext()).load(url).listener(new RequestListener() {
+                @Override
+                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target target, boolean isFirstResource) {
+                    productImageProgress.setVisibility(View.INVISIBLE);
+                    return false;
+                }
 
-            @Override
-            public boolean onResourceReady(Object resource, Object model, Target target, DataSource dataSource, boolean isFirstResource) {
-                productImageProgress.setVisibility(View.INVISIBLE);
-                return false;
-            }
-        }).into(productImage);
-
+                @Override
+                public boolean onResourceReady(Object resource, Object model, Target target, DataSource dataSource, boolean isFirstResource) {
+                    productImageProgress.setVisibility(View.INVISIBLE);
+                    return false;
+                }
+            }).into(productImage);
+        }
     }
 
     @Override

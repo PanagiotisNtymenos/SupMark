@@ -64,6 +64,7 @@ import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
 public class ListActivity extends AppCompatActivity {
 
+    private final String imageQueryURL = "https://drive.google.com/uc?export=view&id=";
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
@@ -84,6 +85,7 @@ public class ListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.list_layout);
+
 
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
@@ -647,5 +649,6 @@ public class ListActivity extends AppCompatActivity {
         super.onBackPressed();
         Animatoo.animateSlideLeft(this); //fire the slide left animation
     }
+
 
 }

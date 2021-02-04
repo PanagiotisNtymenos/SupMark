@@ -51,7 +51,7 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<Product> {
         }
 
         TextView textViewName = convertView.findViewById(R.id.product_name_list);
-        ImageView imageViewProduct = convertView.findViewById(R.id.product_image_list);
+        final ImageView imageViewProduct = convertView.findViewById(R.id.product_image_list);
         ImageView add = convertView.findViewById(R.id.add_product);
         ImageView tick = convertView.findViewById(R.id.tick_product);
 
@@ -61,19 +61,25 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<Product> {
             String url = productItem.getProductImage();
             final ProgressBar productImageProgress = convertView.findViewById(R.id.list_product_image_progressBar);
             productImageProgress.setVisibility(View.VISIBLE);
-            Glide.with(getContext()).load(url).listener(new RequestListener() {
-                @Override
-                public boolean onLoadFailed(@javax.annotation.Nullable GlideException e, Object model, Target target, boolean isFirstResource) {
-                    productImageProgress.setVisibility(View.INVISIBLE);
-                    return false;
-                }
 
-                @Override
-                public boolean onResourceReady(Object resource, Object model, Target target, DataSource dataSource, boolean isFirstResource) {
-                    productImageProgress.setVisibility(View.INVISIBLE);
-                    return false;
-                }
-            }).into(imageViewProduct);
+            if (url.equals("")) {
+                imageViewProduct.setImageResource(R.drawable.logo);
+                productImageProgress.setVisibility(View.INVISIBLE);
+            } else {
+                Glide.with(getContext()).load(url).listener(new RequestListener() {
+                    @Override
+                    public boolean onLoadFailed(@javax.annotation.Nullable GlideException e, Object model, Target target, boolean isFirstResource) {
+                        productImageProgress.setVisibility(View.INVISIBLE);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Object resource, Object model, Target target, DataSource dataSource, boolean isFirstResource) {
+                        productImageProgress.setVisibility(View.INVISIBLE);
+                        return false;
+                    }
+                }).into(imageViewProduct);
+            }
 
             ArrayList<String> productNamesInList = new ArrayList<>();
             for (Product pi : productsInList) {
@@ -112,6 +118,9 @@ public class AutoCompleteProductSearchAdapter extends ArrayAdapter<Product> {
                         suggestions.add(item);
                     }
                 }
+
+                suggestions.add(new Product("", constraint.toString()));
+
             }
             results.values = suggestions;
             results.count = suggestions.size();

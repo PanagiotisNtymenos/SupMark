@@ -125,7 +125,7 @@ public class ProductActivity extends AppCompatActivity {
                 }
 
                 if (snapshot != null && snapshot.exists()) {
-                    HashMap<String, HashMap<String, String>> productsInListDB = (HashMap<String, HashMap<String, String>>) snapshot.get("products");
+                    final HashMap<String, HashMap<String, String>> productsInListDB = (HashMap<String, HashMap<String, String>>) snapshot.get("products");
                     final List<String> productsInList = new ArrayList<>();
                     final List<String> userAddedProduct = new ArrayList<>();
                     final List<Integer> quantityProduct = new ArrayList<>();
@@ -154,16 +154,27 @@ public class ProductActivity extends AppCompatActivity {
                                         if (!listProducts.isEmpty())
                                             listProducts.clear();
                                         allProducts = new ArrayList<>();
+                                        ArrayList<Integer> knownProducts = new ArrayList<>();
                                         for (QueryDocumentSnapshot document : task.getResult()) {
 
-                                            allProducts.add(new Product(document.getString("image"), document.getId()));
+                                            allProducts.add(new Product(imageQueryURL + document.getString("image"), document.getId()));
                                             for (int i = 0; i < productsInList.size(); i++) {
                                                 final int productPosition = i;
                                                 if (productsInList.get(productPosition).equals(document.getId())) {
-                                                    listProducts.add(new Product(document.getString("image"), document.getId(), userAddedProduct.get(productPosition), quantityProduct.get(productPosition), notesProduct.get(productPosition)));
+                                                    listProducts.add(new Product(imageQueryURL + document.getString("image"), document.getId(), userAddedProduct.get(productPosition), quantityProduct.get(productPosition), notesProduct.get(productPosition)));
+                                                    knownProducts.add(i);
                                                 }
                                             }
                                         }
+
+                                        if (listProducts.size() < productsInList.size()) {
+                                            for (int i = 0; i < productsInList.size(); i++) {
+                                                if (!knownProducts.contains(i)) {
+                                                    listProducts.add(new Product("", productsInList.get(i), userAddedProduct.get(i), quantityProduct.get(i), notesProduct.get(i)));
+                                                }
+                                            }
+                                        }
+
                                         setProductsList(listProducts);
                                     } else {
                                         Log.w(TAG, "Error getting products.", task.getException());
@@ -200,7 +211,6 @@ public class ProductActivity extends AppCompatActivity {
     }
 
     public void addProduct(final Product product) {
-        Map<String, Object> toUpdate = new HashMap<String, Object>();
         List<String> productNames = new ArrayList<>();
 
         for (int i = 0; i < listProducts.size(); i++) {
@@ -210,38 +220,6 @@ public class ProductActivity extends AppCompatActivity {
         if (productNames.contains(product.getProduct())) {
             Toast.makeText(getApplicationContext(), "'" + product.getProduct() + "' is already on the list!", Toast.LENGTH_SHORT).show();
         } else {
-//            productNames.add(product.getProduct());
-//            HashMap<String, String> productDetails = new HashMap<>();
-//            HashMap<String, HashMap<String, String>> newProduct = new HashMap<>();
-//            for (int i = 0; i < productNames.size(); i++) {
-//
-//                if (i == productNames.size() - 1) {
-//                    productDetails.put("user", user);
-//                    productDetails.put("quantity", "1");
-//                    productDetails.put("notes", "");
-//                } else {
-//                    productDetails.put("user", listProducts.get(i).getUser());
-//                    productDetails.put("quantity", String.valueOf(listProducts.get(i).getQuantity()));
-//                    productDetails.put("notes", String.valueOf(listProducts.get(i).getNotes()));
-//
-//                }
-//                newProduct.put(productNames.get(i), productDetails);
-//            }
-//
-//            toUpdate.put("products."+productNames.get(i), newProduct);
-//
-//            db.collection("lists")
-//                    .document(currListID)
-//                    .update(toUpdate)
-//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                        @Override
-//                        public void onSuccess(Void aVoid) {
-//                            hideKeyboard(getApplicationContext(), searchBox.getRootView());
-//                            Toast.makeText(getApplicationContext(), "'" + product.getProduct() + "' added to the list!", Toast.LENGTH_SHORT).show();
-//                            mAdapter.notifyDataSetChanged();
-//
-//                        }
-//                    });
 
             HashMap<String, String> productDetails = new HashMap<>();
             productDetails.put("user", user);
